@@ -1,37 +1,63 @@
-# version removed (obsolete)
+# ──────────────────────────────────────────────────────────────────────
+#  docker-compose.yml  — FULL STACK (app + postgres)
+#  Run with:  docker compose up --build
+#  Uses env vars from .env  (copy .env.example → .env first)
+# ──────────────────────────────────────────────────────────────────────
+version: "3.9"
+
 services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────
   postgres:
-    image: postgres:16
-    container_name: minimarketplace_postgres
-    restart: always
+    image: postgres:16-alpine
+    container_name: minimarket-db
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-minimarketplace}
-      POSTGRES_USER: ${DB_USER:-minimarket}
+      POSTGRES_DB:       ${DB_NAME:-minimarket}
+      POSTGRES_USER:     ${DB_USER:-appuser}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Optional init later
-
-  app:
-    build: .
-    container_name: minimarketplace_app
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-minimarketplace}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-minimarket}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-secret}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    depends_on:
-      - postgres
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-appuser} -d ${DB_NAME:-minimarket}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - minimarket-net
+
+  # ── Spring Boot App ───────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minimarket-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/${DB_NAME:-minimarket}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-appuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-secret}
+      JPA_DDL_AUTO:               ${JPA_DDL_AUTO:-update}
+      ADMIN_USERNAME:             ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD:             ${ADMIN_PASSWORD:-admin123}
+      PORT:                       8080
+      JAVA_OPTS:                  "-Xms256m -Xmx512m"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    networks:
+      - minimarket-net
 
 volumes:
-  postgres_data:
+  pgdata:
+    name: minimarket-pgdata
+
+networks:
+  minimarket-net:
+    name: minimarket-net

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head('Log in')}"></head>
+<body class="auth-page">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="auth-main">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-icon">⚡</div>
+      <h1>Log in</h1>
+      <p>Welcome back to MiniMarket</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${errorMsg}"   class="alert alert-error">  <span>✕</span> <span th:text="${errorMsg}"></span></div>
+    <div th:if="${successMsg}" class="alert alert-success"><span>✓</span> <span th:text="${successMsg}"></span></div>
+    <div th:if="${infoMsg}"    class="alert alert-info">   <span>ℹ</span> <span th:text="${infoMsg}"></span></div>
+
+    <!--
+      Spring Security handles POST /auth/login automatically.
+      It reads the 'username' and 'password' fields.
+      Thymeleaf injects the CSRF token automatically.
+    -->
+    <form th:action="@{/auth/login}" method="post" class="auth-form">
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username"
+               placeholder="Enter your username"
+               autocomplete="username" required autofocus/>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password"
+               placeholder="Enter your password"
+               autocomplete="current-password" required/>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">Log in</button>
+    </form>
+
+    <p class="auth-switch">Don't have an account? <a th:href="@{/auth/register}">Sign up free</a></p>
+
+    <div class="demo-hint">
+      <strong>Demo credentials</strong><br/>
+      Admin — <code>admin</code> / <code>admin123</code>
+    </div>
+
+  </div>
+</main>
+</body>
+</html>

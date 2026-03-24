@@ -1,61 +1,111 @@
 package com.example.minimarketplace.service;
 
-import com.example.minimarketplace.dto.RegisterDTO;
-import com.example.minimarketplace.model.Role;
-import com.example.minimarketplace.model.User;
+import com.example.minimarketplace.dto.RegisterRequest;
+import com.example.minimarketplace.entity.SellerRequest;
+import com.example.minimarketplace.entity.SellerRequest.RequestStatus;
+import com.example.minimarketplace.entity.User;
 import com.example.minimarketplace.repository.RoleRepository;
+import com.example.minimarketplace.repository.SellerRequestRepository;
 import com.example.minimarketplace.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
-@Transactional
-public class UserService implements UserDetailsService {
+@RequiredArgsConstructor
+@Slf4j
+public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository          userRepository;
+    private final RoleRepository          roleRepository;
+    private final SellerRequestRepository sellerRequestRepository;
+    private final PasswordEncoder         passwordEncoder;
 
-    @Autowired
-    private RoleRepository roleRepository;
+    // ── Registration ─────────────────────────────────────────────────────
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Transactional
+    public User register(RegisterRequest req) {
+        if (userRepository.existsByUsername(req.getUsername()))
+            throw new RuntimeException("Username '" + req.getUsername() + "' is already taken.");
+        if (userRepository.existsByEmail(req.getEmail()))
+            throw new RuntimeException("An account with that email already exists.");
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .roles(user.getRoles().stream().map(Role::getName).toArray(String[]::new))
-                .disabled(!user.isEnabled())
-                .build();
+        var buyerRole = roleRepository.findByName("ROLE_BUYER")
+            .orElseThrow(() -> new IllegalStateException("ROLE_BUYER missing — check DataInitializer."));
+
+        var user = User.builder()
+            .username(req.getUsername())
+            .email(req.getEmail())
+            .password(passwordEncoder.encode(req.getPassword()))
+            .enabled(true)
+            .roles(new HashSet<>(Set.of(buyerRole)))
+            .build();
+
+        log.info("Registered new user: {}", req.getUsername());
+        return userRepository.save(user);
     }
 
-    public User registerUser(RegisterDTO registerDTO) {
-        if (userRepository.existsByUsername(registerDTO.getUsername()) || 
-            userRepository.existsByEmail(registerDTO.getEmail())) {
-            throw new RuntimeException("Username or email already exists");
-        }
+    // ── Seller request flow ───────────────────────────────────────────────
 
-        User user = new User();
-        user.setUsername(registerDTO.getUsername());
-        user.setEmail(registerDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+    @Transactional
+    public SellerRequest requestSellerRole(String username, String note) {
+        var user = findByUsername(username);
+        if (user.isSeller())
+            throw new RuntimeException("You are already a seller.");
+        if (sellerRequestRepository.existsByUserAndStatus(user, RequestStatus.PENDING))
+            throw new RuntimeException("You already have a pending request.");
 
-        Role role = roleRepository.findByName(registerDTO.getRole())
-                .orElseThrow(() -> new RuntimeException("Role not found: " + registerDTO.getRole()));
-        user.setRoles(Collections.singleton(role));
+        var req = SellerRequest.builder().user(user).note(note).build();
+        log.info("Seller request submitted by: {}", username);
+        return sellerRequestRepository.save(req);
+    }
 
-        return userRepository.save(user);
+    @Transactional
+    public void approveSellerRequest(Long requestId) {
+        var req = sellerRequestRepository.findById(requestId)
+            .orElseThrow(() -> new RuntimeException("Request not found: " + requestId));
+        var sellerRole = roleRepository.findByName("ROLE_SELLER")
+            .orElseThrow(() -> new IllegalStateException("ROLE_SELLER missing."));
+
+        req.setStatus(RequestStatus.APPROVED);
+        req.setReviewedAt(LocalDateTime.now());
+        req.getUser().getRoles().add(sellerRole);
+
+        userRepository.save(req.getUser());
+        sellerRequestRepository.save(req);
+        log.info("Approved seller request {} for user {}", requestId, req.getUser().getUsername());
+    }
+
+    @Transactional
+    public void rejectSellerRequest(Long requestId) {
+        var req = sellerRequestRepository.findById(requestId)
+            .orElseThrow(() -> new RuntimeException("Request not found: " + requestId));
+        req.setStatus(RequestStatus.REJECTED);
+        req.setReviewedAt(LocalDateTime.now());
+        sellerRequestRepository.save(req);
+        log.info("Rejected seller request {}", requestId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SellerRequest> getPendingRequests() {
+        return sellerRequestRepository.findByStatus(RequestStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found: " + username));
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }

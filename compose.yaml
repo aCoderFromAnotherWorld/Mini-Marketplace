@@ -1,9 +1,25 @@
+# ──────────────────────────────────────────────────────────────────────
+#  compose.yaml  — LOCAL DEVELOPMENT only
+#  Spring Boot DevTools auto-starts this when you run from the IDE.
+#  For the full production stack use docker-compose.yml instead.
+# ──────────────────────────────────────────────────────────────────────
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:16-alpine'
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB:       minimarket
+      POSTGRES_USER:     appuser
+      POSTGRES_PASSWORD: secret
     ports:
-      - '5432'
+      - '5432:5432'
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d minimarket"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata_dev:

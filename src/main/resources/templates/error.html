@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head('Error')}"></head>
+<body class="auth-page">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="auth-main">
+  <div class="auth-card" style="text-align:center">
+    <div style="font-size:4rem;font-weight:900;color:var(--border);line-height:1;margin-bottom:.5rem"
+         th:text="${errorCode} ?: '500'">500</div>
+    <h1 style="margin-bottom:.5rem">Something went wrong</h1>
+    <p class="muted" th:text="${errorMessage} ?: 'An unexpected error occurred.'"></p>
+    <div style="margin-top:2rem">
+      <a th:href="@{/}" class="btn btn-primary">← Back to Home</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

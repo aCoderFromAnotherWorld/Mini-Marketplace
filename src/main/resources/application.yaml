@@ -2,51 +2,34 @@ spring:
   application:
     name: minimarketplace
 
-  # Local profile (default)
-  config:
-    activate:
-      on-profile: local
-
+  # ── Database ──────────────────────────────────────────────────────
+  # spring-boot-docker-compose auto-fills these locally from compose.yaml.
+  # On Render / production, set SPRING_DATASOURCE_* env vars instead.
   datasource:
-    url: jdbc:postgresql://localhost:5432/minimarketplace
-    username: minimarket
-    password: secret
+    url:      ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/minimarket}
+    username: ${SPRING_DATASOURCE_USERNAME:appuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
 
+  # ── JPA / Hibernate ───────────────────────────────────────────────
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:update}   # update = dev, validate = prod
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  security:
-    user:
-      name: admin
-      password: admin  # temp, remove later
+  # ── Thymeleaf ─────────────────────────────────────────────────────
+  thymeleaf:
+    cache: false
 
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-
-  datasource:
-    url: jdbc:postgresql://db:5432/minimarketplace
-    username: minimarket
-    password: secret
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-
+# ── Server ────────────────────────────────────────────────────────
 server:
-  port: 8080
+  port: ${PORT:8080}
 
+# ── Logging ───────────────────────────────────────────────────────
 logging:
   level:
     org.springframework.security: DEBUG
