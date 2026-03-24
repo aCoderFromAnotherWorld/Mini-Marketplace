@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/navbar :: head('Seller Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="main">
+<div class="container" style="padding:2rem 1.5rem">
+  <div class="page-header">
+    <span class="mode-pill pill-seller">SELLER</span>
+    <h1>Seller Dashboard</h1>
+    <p class="muted">Welcome, <span sec:authentication="name">Seller</span>. Manage your products and sales here.</p>
+  </div>
+  <div class="info-box">
+    Product management, file uploads, and sales analytics are coming in the next sprint.
+  </div>
+  <a th:href="@{/}" class="btn btn-outline">← Back to marketplace</a>
+</div>
+</main>
+</body>
+</html>

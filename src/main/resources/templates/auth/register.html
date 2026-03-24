@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head('Sign up')}"></head>
+<body class="auth-page">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="auth-main">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-icon">⚡</div>
+      <h1>Create account</h1>
+      <p>All new accounts start as buyers</p>
+    </div>
+
+    <div th:if="${errorMsg}" class="alert alert-error">
+      <span>✕</span><span th:text="${errorMsg}"></span>
+    </div>
+
+    <form th:action="@{/auth/register}"
+          th:object="${registerRequest}"
+          method="post" class="auth-form">
+
+      <!-- Username -->
+      <div class="field" th:classappend="${#fields.hasErrors('username')} ? 'field-error' : ''">
+        <label for="reg-username">Username</label>
+        <input id="reg-username" type="text" th:field="*{username}"
+               placeholder="3–20 chars, letters/numbers/underscores"
+               autocomplete="username" autofocus/>
+        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="err-msg"></span>
+      </div>
+
+      <!-- Email -->
+      <div class="field" th:classappend="${#fields.hasErrors('email')} ? 'field-error' : ''">
+        <label for="reg-email">Email</label>
+        <input id="reg-email" type="email" th:field="*{email}"
+               placeholder="you@example.com" autocomplete="email"/>
+        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="err-msg"></span>
+      </div>
+
+      <!-- Password -->
+      <div class="field" th:classappend="${#fields.hasErrors('password')} ? 'field-error' : ''">
+        <label for="reg-password">Password</label>
+        <input id="reg-password" type="password" th:field="*{password}"
+               placeholder="At least 6 characters" autocomplete="new-password"/>
+        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="err-msg"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">Create account</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a th:href="@{/auth/login}">Log in</a></p>
+
+  </div>
+</main>
+</body>
+</html>

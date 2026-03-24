@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/navbar :: head('My Orders')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<main class="main">
+<div class="container" style="padding:2rem 1.5rem">
+  <div class="page-header">
+    <span class="mode-pill pill-buyer">BUYER</span>
+    <h1>My Orders</h1>
+    <p class="muted">Your purchase history, <span sec:authentication="name">buyer</span>.</p>
+  </div>
+  <div class="info-box">
+    Your orders will appear here once you purchase products.
+  </div>
+  <a th:href="@{/}" class="btn btn-outline">← Back to marketplace</a>
+</div>
+</main>
+</body>
+</html>
