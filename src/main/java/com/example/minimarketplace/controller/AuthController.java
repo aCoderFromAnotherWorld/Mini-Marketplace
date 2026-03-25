@@ -2,7 +2,7 @@ package com.example.minimarketplace.controller;
 
 import com.example.minimarketplace.dto.RegisterRequest;
 import com.example.minimarketplace.service.UserService;
-import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -42,7 +42,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@Valid @ModelAttribute("registerRequest") RegisterRequest req,
+    public String register(@ModelAttribute("registerRequest") RegisterRequest req,
                            BindingResult br,
                            RedirectAttributes ra,
                            Model model) {
