@@ -20,7 +20,6 @@
     <form th:action="@{/auth/register}"
           th:object="${registerRequest}"
           method="post" class="auth-form">
-
       <!-- Username -->
       <div class="field" th:classappend="${#fields.hasErrors('username')} ? 'field-error' : ''">
         <label for="reg-username">Username</label>
