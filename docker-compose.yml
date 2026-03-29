@@ -2,9 +2,8 @@
 #  docker-compose.yml  — FULL STACK (app + postgres)
 #  Run with:  docker compose up --build
 #  Uses env vars from .env  (copy .env.example → .env first)
+#  Keep DB defaults aligned with compose.yaml so both local modes use one DB target.
 # ──────────────────────────────────────────────────────────────────────
-version: "3.9"
-
 services:
 
   # ── PostgreSQL ────────────────────────────────────────────────────
@@ -17,7 +16,7 @@ services:
       POSTGRES_USER:     ${DB_USER:-appuser}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro

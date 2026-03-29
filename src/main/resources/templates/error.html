@@ -6,11 +6,34 @@
 <main class="auth-main">
   <div class="auth-card" style="text-align:center">
     <div style="font-size:4rem;font-weight:900;color:var(--border);line-height:1;margin-bottom:.5rem"
-         th:text="${errorCode} ?: '500'">500</div>
-    <h1 style="margin-bottom:.5rem">Something went wrong</h1>
-    <p class="muted" th:text="${errorMessage} ?: 'An unexpected error occurred.'"></p>
+         th:text="${errorCode != null ? errorCode : (status != null ? status : '500')}">500</div>
+    <h1 style="margin-bottom:.5rem"
+        th:text="${errorTitle != null ? errorTitle : (error != null ? error : 'Something went wrong')}">Something went wrong</h1>
+    <p class="muted"
+       th:text="${errorMessage != null ? errorMessage : (message != null ? message : 'An unexpected error occurred.')}">
+      An unexpected error occurred.
+    </p>
+    <div style="margin-top:1.5rem;padding:1rem;border:1px solid var(--border);border-radius:1rem;background:#f8faff;text-align:left">
+      <div style="display:grid;gap:.75rem">
+        <div>
+          <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Path</div>
+          <div style="font-family:monospace;word-break:break-word"
+               th:text="${requestPath != null ? requestPath : (path != null ? path : 'Unknown')}">/unknown</div>
+        </div>
+        <div>
+          <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Problem</div>
+          <div style="font-family:monospace;word-break:break-word"
+               th:text="${errorType != null ? errorType : (exception != null ? exception : 'UnknownException')}">UnknownException</div>
+        </div>
+      </div>
+    </div>
+    <details th:if="${trace != null}" style="margin-top:1rem;text-align:left">
+      <summary style="cursor:pointer;font-weight:700">Stack trace</summary>
+      <pre style="margin-top:.75rem;padding:1rem;border-radius:1rem;background:#0f172a;color:#e2e8f0;overflow:auto;white-space:pre-wrap"
+           th:text="${trace}"></pre>
+    </details>
     <div style="margin-top:2rem">
-      <a th:href="@{/}" class="btn btn-primary">← Back to Home</a>
+      <a th:href="@{/}" class="btn btn-primary">Back to Home</a>
     </div>
   </div>
 </main>
