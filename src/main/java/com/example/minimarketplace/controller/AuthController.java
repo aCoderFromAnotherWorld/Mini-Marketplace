@@ -1,8 +1,14 @@
 package com.example.minimarketplace.controller;
 
+import com.example.minimarketplace.config.SecurityConfig;
 import com.example.minimarketplace.dto.RegisterRequest;
 import com.example.minimarketplace.service.UserService;
+<<<<<<< HEAD
 
+=======
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+>>>>>>> d49989a289ccff579f32903510902ff6d2f17285
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -22,27 +28,50 @@ public class AuthController {
 
     /* ── Login ──────────────────────────────────────────────── */
 
-    @GetMapping("/login")
+    @GetMapping({"/login", "/login/"})
     public String loginPage(@RequestParam(required = false) String error,
+                            @RequestParam(required = false) String csrfError,
                             @RequestParam(required = false) String logout,
-                            Authentication auth, Model model) {
+                            Authentication auth,
+                            HttpSession session,
+                            Model model) {
         if (isLoggedIn(auth)) return "redirect:/";
+        String authErrorMessage = consumeAuthErrorMessage(session);
         if (error  != null) model.addAttribute("errorMsg",   "Invalid username or password.");
+        if (authErrorMessage != null) {
+            model.addAttribute("errorMsg", authErrorMessage);
+        } else if (csrfError != null) {
+            model.addAttribute("errorMsg", "Your session expired. Please try again.");
+        }
         if (logout != null) model.addAttribute("successMsg", "You have been logged out.");
         return "auth/login";
     }
 
     /* ── Register ───────────────────────────────────────────── */
 
-    @GetMapping("/register")
-    public String registerPage(Authentication auth, Model model) {
+    @GetMapping({"/register", "/register/"})
+    public String registerPage(@RequestParam(required = false) String csrfError,
+                               Authentication auth,
+                               HttpSession session,
+                               Model model) {
         if (isLoggedIn(auth)) return "redirect:/";
+        String authErrorMessage = consumeAuthErrorMessage(session);
+        if (authErrorMessage != null) {
+            model.addAttribute("errorMsg", authErrorMessage);
+        } else if (csrfError != null) {
+            model.addAttribute("errorMsg", "Your session expired. Please submit the form again.");
+        }
         model.addAttribute("registerRequest", new RegisterRequest());
         return "auth/register";
     }
 
+<<<<<<< HEAD
     @PostMapping("/register")
     public String register(@ModelAttribute("registerRequest") RegisterRequest req,
+=======
+    @PostMapping({"/register", "/register/"})
+    public String register(@Valid @ModelAttribute("registerRequest") RegisterRequest req,
+>>>>>>> d49989a289ccff579f32903510902ff6d2f17285
                            BindingResult br,
                            RedirectAttributes ra,
                            Model model) {
@@ -60,5 +89,11 @@ public class AuthController {
 
     private boolean isLoggedIn(Authentication a) {
         return a != null && a.isAuthenticated() && !"anonymousUser".equals(a.getPrincipal());
+    }
+
+    private String consumeAuthErrorMessage(HttpSession session) {
+        Object value = session.getAttribute(SecurityConfig.AUTH_ERROR_MESSAGE_SESSION_KEY);
+        session.removeAttribute(SecurityConfig.AUTH_ERROR_MESSAGE_SESSION_KEY);
+        return value instanceof String message && !message.isBlank() ? message : null;
     }
 }

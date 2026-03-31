@@ -6,9 +6,15 @@ spring:
   # spring-boot-docker-compose auto-fills these locally from compose.yaml.
   # On Render / production, set SPRING_DATASOURCE_* env vars instead.
   datasource:
+<<<<<<< HEAD
     url:      ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/market_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:1234}
+=======
+    url:      ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:${DB_PORT:5433}/minimarket}
+    username: ${SPRING_DATASOURCE_USERNAME:appuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret}
+>>>>>>> d49989a289ccff579f32903510902ff6d2f17285
     driver-class-name: org.postgresql.Driver
 
   # ── JPA / Hibernate ───────────────────────────────────────────────
@@ -28,6 +34,11 @@ spring:
 # ── Server ────────────────────────────────────────────────────────
 server:
   port: ${PORT:8080}
+  error:
+    include-message: ${SERVER_ERROR_INCLUDE_MESSAGE:always}
+    include-binding-errors: ${SERVER_ERROR_INCLUDE_BINDING_ERRORS:always}
+    include-exception: ${SERVER_ERROR_INCLUDE_EXCEPTION:true}
+    include-stacktrace: ${SERVER_ERROR_INCLUDE_STACKTRACE:on_param}
 
 # ── Logging ───────────────────────────────────────────────────────
 logging:

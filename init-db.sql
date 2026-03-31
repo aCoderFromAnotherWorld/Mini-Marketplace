@@ -56,7 +56,7 @@ INSERT INTO users (username, email, password, enabled)
 VALUES (
     'admin',
     'admin@minimarket.com',
-    '$2a$12$Fn7tE2IfPpFn/.RXnFl0p.F8eFM/Noo7oGAjzXkPXn8wNBHmfGCLu',
+    '$2a$12$8pL4/E5VspMYPGdd4nXRNOH7TkCOEhLlD54wGxIiftNsrVoNWsreu',
     TRUE
 ) ON CONFLICT (username) DO NOTHING;
 

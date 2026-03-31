@@ -1,25 +1,28 @@
 # ──────────────────────────────────────────────────────────────────────
 #  compose.yaml  — LOCAL DEVELOPMENT only
 #  Spring Boot DevTools auto-starts this when you run from the IDE.
-#  For the full production stack use docker-compose.yml instead.
+#  It intentionally shares the same DB port/volume defaults as docker-compose.yml
+#  so both modes point at the same Postgres data.
 # ──────────────────────────────────────────────────────────────────────
 services:
   postgres:
     image: 'postgres:16-alpine'
+    container_name: minimarket-db
     environment:
-      POSTGRES_DB:       minimarket
-      POSTGRES_USER:     appuser
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB:       ${DB_NAME:-minimarket}
+      POSTGRES_USER:     ${DB_USER:-appuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - '5432:5432'
+      - '${DB_PORT:-5433}:5432'
     volumes:
-      - pgdata_dev:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U appuser -d minimarket"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-appuser} -d ${DB_NAME:-minimarket}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  pgdata_dev:
+  pgdata:
+    name: minimarket-pgdata

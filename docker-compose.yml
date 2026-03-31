@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+=======
+# ──────────────────────────────────────────────────────────────────────
+#  docker-compose.yml  — FULL STACK (app + postgres)
+#  Run with:  docker compose up --build
+#  Uses env vars from .env  (copy .env.example → .env first)
+#  Keep DB defaults aligned with compose.yaml so both local modes use one DB target.
+# ──────────────────────────────────────────────────────────────────────
+>>>>>>> d49989a289ccff579f32903510902ff6d2f17285
 services:
   db:
     image: 'postgres:latest'
@@ -6,4 +15,51 @@ services:
       - 'POSTGRES_PASSWORD=1234'
       - 'POSTGRES_USER=postgres'
     ports:
+<<<<<<< HEAD
       - '5432:5432'
+=======
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-appuser} -d ${DB_NAME:-minimarket}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - minimarket-net
+
+  # ── Spring Boot App ───────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minimarket-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/${DB_NAME:-minimarket}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-appuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-secret}
+      JPA_DDL_AUTO:               ${JPA_DDL_AUTO:-update}
+      ADMIN_USERNAME:             ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD:             ${ADMIN_PASSWORD:-admin123}
+      PORT:                       8080
+      JAVA_OPTS:                  "-Xms256m -Xmx512m"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    networks:
+      - minimarket-net
+
+volumes:
+  pgdata:
+    name: minimarket-pgdata
+
+networks:
+  minimarket-net:
+    name: minimarket-net
+>>>>>>> d49989a289ccff579f32903510902ff6d2f17285
