@@ -63,7 +63,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Auto-starts compose.yaml when running from IDE -->
+		<!-- Auto-starts compose.dev.yaml when running from the IDE -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-docker-compose</artifactId>
