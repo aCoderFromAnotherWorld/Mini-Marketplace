@@ -34,7 +34,7 @@
 - [ ] 3 integration tests (controllers)
 
 ### Phase 6: DevOps & Deploy
-- [ ] GitHub Actions ci-cd.yml
+- [x] GitHub Actions ci-cd.yml
 - [ ] Update README.md (diagrams, endpoints, instructions)
 - [ ] Test local: mvn test, docker compose up
 - [ ] Git push, Render deploy
