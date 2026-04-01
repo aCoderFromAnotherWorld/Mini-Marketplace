@@ -2,16 +2,20 @@ spring:
   application:
     name: minimarketplace
 
-  # ── Database ──────────────────────────────────────────────────────
-  # spring-boot-docker-compose auto-fills these locally from compose.yaml.
+  docker:
+    compose:
+      file: compose.dev.yaml
+
+  # -- Database -----------------------------------------------------------------
+  # spring-boot-docker-compose auto-fills these locally from compose.dev.yaml.
   # On Render / production, set SPRING_DATASOURCE_* env vars instead.
   datasource:
-    url:      ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:${DB_PORT:5433}/minimarket}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:${DB_PORT:5433}/minimarket}
     username: ${SPRING_DATASOURCE_USERNAME:appuser}
     password: ${SPRING_DATASOURCE_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
 
-  # ── JPA / Hibernate ───────────────────────────────────────────────
+  # -- JPA / Hibernate ----------------------------------------------------------
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}   # update = dev, validate = prod
@@ -21,11 +25,11 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  # ── Thymeleaf ─────────────────────────────────────────────────────
+  # -- Thymeleaf ----------------------------------------------------------------
   thymeleaf:
     cache: false
 
-# ── Server ────────────────────────────────────────────────────────
+# -- Server ---------------------------------------------------------------------
 server:
   port: ${PORT:8080}
   error:
@@ -34,7 +38,7 @@ server:
     include-exception: ${SERVER_ERROR_INCLUDE_EXCEPTION:true}
     include-stacktrace: ${SERVER_ERROR_INCLUDE_STACKTRACE:on_param}
 
-# ── Logging ───────────────────────────────────────────────────────
+# -- Logging --------------------------------------------------------------------
 logging:
   level:
     org.springframework.security: DEBUG

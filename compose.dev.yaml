@@ -1,0 +1,27 @@
+# ------------------------------------------------------------------------------
+# compose.dev.yaml - LOCAL DEVELOPMENT only (database service)
+# Spring Boot's docker-compose integration uses this when running from the IDE
+# so local app runs can start Postgres without also starting the app container.
+# ------------------------------------------------------------------------------
+services:
+  postgres:
+    image: "postgres:16-alpine"
+    container_name: minimarket-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-minimarket}
+      POSTGRES_USER: ${DB_USER:-appuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-appuser} -d ${DB_NAME:-minimarket}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+    name: minimarket-pgdata

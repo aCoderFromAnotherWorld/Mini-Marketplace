@@ -4,7 +4,7 @@
 
 ### Phase 1: Core Models & DB Setup ✅
 - [x] Create TODO.md
-- [x] Update docker-compose.yml (add app service, env vars)
+- [x] Update compose.yaml (add app service, env vars)
 - [x] Create Dockerfile
 - [x] Update application.yaml (datasource, JPA, profiles)
 - [x] Create entities: Role.java, User.java, Product.java, Order.java
