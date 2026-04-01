@@ -37,11 +37,44 @@ CREATE TABLE IF NOT EXISTS seller_requests (
     reviewed_at  TIMESTAMP
 );
 
+-- Seller products
+CREATE TABLE IF NOT EXISTS products (
+    id                 BIGSERIAL      PRIMARY KEY,
+    seller_id          BIGINT         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name               VARCHAR(120)   NOT NULL,
+    description        VARCHAR(1000),
+    price              NUMERIC(12,2)  NOT NULL,
+    stock              INTEGER        NOT NULL DEFAULT 0,
+    image_filename     VARCHAR(255),
+    image_content_type VARCHAR(100),
+    image_data         BYTEA,
+    asset_filename     VARCHAR(255),
+    asset_content_type VARCHAR(100),
+    asset_data         BYTEA,
+    created_at         TIMESTAMP      NOT NULL DEFAULT NOW(),
+    updated_at         TIMESTAMP      NOT NULL DEFAULT NOW()
+);
+
+-- Sales records for seller analytics
+CREATE TABLE IF NOT EXISTS sales (
+    id           BIGSERIAL     PRIMARY KEY,
+    seller_id    BIGINT        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id   BIGINT        NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    quantity     INTEGER       NOT NULL,
+    unit_price   NUMERIC(12,2) NOT NULL,
+    total_amount NUMERIC(12,2) NOT NULL,
+    sold_at      TIMESTAMP     NOT NULL DEFAULT NOW()
+);
+
 -- ── Indexes ──────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_users_username         ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email            ON users(email);
 CREATE INDEX IF NOT EXISTS idx_seller_requests_status ON seller_requests(status);
 CREATE INDEX IF NOT EXISTS idx_seller_requests_user   ON seller_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_products_seller         ON products(seller_id);
+CREATE INDEX IF NOT EXISTS idx_sales_seller            ON sales(seller_id);
+CREATE INDEX IF NOT EXISTS idx_sales_product           ON sales(product_id);
+CREATE INDEX IF NOT EXISTS idx_sales_sold_at           ON sales(sold_at);
 
 -- ── Seed roles (idempotent) ───────────────────────────────────────────
 INSERT INTO roles (name) VALUES ('ROLE_ADMIN')  ON CONFLICT (name) DO NOTHING;

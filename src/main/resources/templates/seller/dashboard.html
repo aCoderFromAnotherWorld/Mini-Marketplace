@@ -9,12 +9,209 @@
   <div class="page-header">
     <span class="mode-pill pill-seller">SELLER</span>
     <h1>Seller Dashboard</h1>
-    <p class="muted">Welcome, <span sec:authentication="name">Seller</span>. Manage your products and sales here.</p>
+    <p class="muted">Welcome, <span sec:authentication="name">Seller</span>. Manage products, uploads, and sales insights.</p>
   </div>
-  <div class="info-box">
-    Product management, file uploads, and sales analytics are coming in the next sprint.
-  </div>
-  <a th:href="@{/}" class="btn btn-outline">← Back to marketplace</a>
+
+  <div th:if="${successMsg}" class="alert alert-success"><span>OK</span><span th:text="${successMsg}"></span></div>
+  <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
+
+  <section class="dash-section">
+    <h2 class="dash-title">Sales Analytics</h2>
+    <div class="analytics-grid">
+      <article class="metric-card">
+        <h3>Total Revenue</h3>
+        <p th:text="${'$' + #numbers.formatDecimal(analytics.totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
+      </article>
+      <article class="metric-card">
+        <h3>Total Sales</h3>
+        <p th:text="${analytics.totalSales}">0</p>
+      </article>
+      <article class="metric-card">
+        <h3>Units Sold</h3>
+        <p th:text="${analytics.totalUnitsSold}">0</p>
+      </article>
+      <article class="metric-card">
+        <h3>Top Product</h3>
+        <p th:text="${analytics.topProductName}">N/A</p>
+        <small class="muted" th:text="${analytics.topProductUnits + ' unit(s)'}">0 unit(s)</small>
+      </article>
+      <article class="metric-card">
+        <h3>Products Listed</h3>
+        <p th:text="${analytics.totalProducts}">0</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="dash-section">
+    <h2 class="dash-title">Record Sale</h2>
+    <form th:action="@{/seller/sales}" method="post" th:object="${saleForm}" class="form-grid compact-grid">
+      <div class="field">
+        <label for="productId">Product</label>
+        <select id="productId" th:field="*{productId}">
+          <option value="">Select product</option>
+          <option th:each="p : ${products}"
+                  th:value="${p.id}"
+                  th:text="${p.name + ' (stock: ' + p.stock + ')'}"></option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="quantity">Quantity</label>
+        <input id="quantity" type="number" min="1" th:field="*{quantity}" placeholder="1"/>
+      </div>
+      <div class="field field-inline">
+        <button class="btn btn-primary">Record Sale</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="dash-section">
+    <h2 class="dash-title">Add Product</h2>
+    <form th:action="@{/seller/products}" method="post" enctype="multipart/form-data"
+          th:object="${newProductForm}" class="form-grid">
+      <div class="field">
+        <label for="name">Product Name</label>
+        <input id="name" type="text" th:field="*{name}" placeholder="eBook, template, plugin..." required/>
+      </div>
+      <div class="field">
+        <label for="price">Price (USD)</label>
+        <input id="price" type="number" th:field="*{price}" min="0.01" step="0.01" required/>
+      </div>
+      <div class="field">
+        <label for="stock">Stock</label>
+        <input id="stock" type="number" th:field="*{stock}" min="0" step="1" required/>
+      </div>
+      <div class="field">
+        <label for="imageFile">Product Image</label>
+        <input id="imageFile" name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"/>
+      </div>
+      <div class="field">
+        <label for="assetFile">Product File</label>
+        <input id="assetFile" name="assetFile" type="file"/>
+      </div>
+      <div class="field field-full">
+        <label for="description">Description</label>
+        <textarea id="description" th:field="*{description}" rows="3"
+                  placeholder="Short product details for buyers"></textarea>
+      </div>
+      <div class="field field-full">
+        <button class="btn btn-primary">Create Product</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="dash-section">
+    <h2 class="dash-title">Your Products <span class="count-badge" th:text="${#lists.size(products)}">0</span></h2>
+    <div th:if="${#lists.isEmpty(products)}" class="empty-box">
+      No products yet. Add your first product above.
+    </div>
+    <div th:unless="${#lists.isEmpty(products)}" class="table-box">
+      <table class="tbl">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Preview</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>File</th>
+          <th>Created</th>
+          <th>Manage</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${products}">
+          <td th:text="${p.id}">1</td>
+          <td>
+            <img th:if="${p.imageFilename != null}" class="thumb-img"
+                 th:src="@{/seller/products/{id}/image(id=${p.id})}" alt="Product image"/>
+            <span th:if="${p.imageFilename == null}" class="muted">No image</span>
+          </td>
+          <td>
+            <strong th:text="${p.name}">Name</strong>
+            <p class="muted tiny" th:text="${p.description != null ? p.description : 'No description'}"></p>
+          </td>
+          <td th:text="${'$' + #numbers.formatDecimal(p.price, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+          <td th:text="${p.stock}">0</td>
+          <td>
+            <a th:if="${p.assetFilename != null}" th:href="@{/seller/products/{id}/asset(id=${p.id})}" class="btn btn-sm btn-outline">Download</a>
+            <span th:if="${p.assetFilename == null}" class="muted">No file</span>
+          </td>
+          <td th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'dd MMM yyyy') : '-'}">-</td>
+          <td>
+            <div class="stacked-actions">
+              <form th:action="@{/seller/products/{id}/update(id=${p.id})}" method="post" enctype="multipart/form-data"
+                    class="inline-edit-form">
+                <input name="name" type="text" th:value="${p.name}" maxlength="120" required/>
+                <input name="price" type="number" th:value="${p.price}" min="0.01" step="0.01" required/>
+                <input name="stock" type="number" th:value="${p.stock}" min="0" step="1" required/>
+                <input name="description" type="text" th:value="${p.description}" maxlength="1000" placeholder="Description"/>
+                <input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"/>
+                <input name="assetFile" type="file"/>
+                <button class="btn btn-sm btn-outline">Update</button>
+              </form>
+              <form th:action="@{/seller/products/{id}/delete(id=${p.id})}" method="post">
+                <button class="btn btn-sm btn-reject">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="dash-section">
+    <h2 class="dash-title">Revenue (Last 7 Days)</h2>
+    <div class="table-box">
+      <table class="tbl">
+        <thead>
+        <tr>
+          <th>Day</th>
+          <th>Revenue</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="point : ${dailyRevenue}">
+          <td th:text="${#temporals.format(point.day, 'dd MMM yyyy')}">01 Jan 2026</td>
+          <td th:text="${'$' + #numbers.formatDecimal(point.revenue, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="dash-section">
+    <h2 class="dash-title">Recent Sales <span class="count-badge" th:text="${#lists.size(recentSales)}">0</span></h2>
+    <div th:if="${#lists.isEmpty(recentSales)}" class="empty-box">
+      No sales recorded yet.
+    </div>
+    <div th:unless="${#lists.isEmpty(recentSales)}" class="table-box">
+      <table class="tbl">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+          <th>Sold At</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${recentSales}">
+          <td th:text="${s.id}">1</td>
+          <td th:text="${s.product.name}">Product</td>
+          <td th:text="${s.quantity}">1</td>
+          <td th:text="${'$' + #numbers.formatDecimal(s.unitPrice, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+          <td th:text="${'$' + #numbers.formatDecimal(s.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+          <td th:text="${s.soldAt != null ? #temporals.format(s.soldAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <a th:href="@{/}" class="btn btn-outline"><- Back to marketplace</a>
 </div>
 </main>
 </body>

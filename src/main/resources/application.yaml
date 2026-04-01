@@ -28,6 +28,10 @@ spring:
   # -- Thymeleaf ----------------------------------------------------------------
   thymeleaf:
     cache: false
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
 
 # -- Server ---------------------------------------------------------------------
 server:
