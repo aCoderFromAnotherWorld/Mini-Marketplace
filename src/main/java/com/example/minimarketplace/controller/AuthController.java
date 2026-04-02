@@ -3,12 +3,8 @@ package com.example.minimarketplace.controller;
 import com.example.minimarketplace.config.SecurityConfig;
 import com.example.minimarketplace.dto.RegisterRequest;
 import com.example.minimarketplace.service.UserService;
-<<<<<<< HEAD
 
-=======
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
->>>>>>> d49989a289ccff579f32903510902ff6d2f17285
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -65,13 +61,8 @@ public class AuthController {
         return "auth/register";
     }
 
-<<<<<<< HEAD
     @PostMapping("/register")
     public String register(@ModelAttribute("registerRequest") RegisterRequest req,
-=======
-    @PostMapping({"/register", "/register/"})
-    public String register(@Valid @ModelAttribute("registerRequest") RegisterRequest req,
->>>>>>> d49989a289ccff579f32903510902ff6d2f17285
                            BindingResult br,
                            RedirectAttributes ra,
                            Model model) {
