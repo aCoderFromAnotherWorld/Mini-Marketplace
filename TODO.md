@@ -1,7 +1,13 @@
-# Mini Marketplace Implementation TODO
+# TODO: Fix Java compilation errors
 
-## Approved Plan Steps (Sequential)
+**Approved Plan Steps:**
+1. [x] Edit RegisterRequest.java: Uncomment the jakarta.validation import
+2. [x] Edit pom.xml: Add spring-boot-starter-validation dependency  
+3. [x] (Optional) Clean up commented import in AuthController.java
+4. [x] Run `mvn clean compile` to verify **[BUILD SUCCESS]**
+5. [x] Test application startup with `mvn spring-boot:run`
 
+<<<<<<< HEAD
 ### Phase 1: Core Models & DB Setup ✅
 - [x] Create TODO.md
 - [x] Update compose.yaml (add app service, env vars)
@@ -40,3 +46,5 @@
 - [ ] Git push, Render deploy
 
 Updated after each step.
+=======
+>>>>>>> ac0cad1ddb15438d264bf28337f6586338c1797a
