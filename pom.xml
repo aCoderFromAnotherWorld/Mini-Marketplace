@@ -19,6 +19,7 @@
 	<properties>
 		<!-- FIXED: Java 25 does not exist. Using Java 21 LTS -->
 		<java.version>21</java.version>
+		<lombok.version>1.18.44</lombok.version>
 	</properties>
 
 	<dependencies>
@@ -80,6 +81,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -117,6 +119,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>

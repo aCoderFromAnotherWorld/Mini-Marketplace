@@ -12,6 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    List<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByCreatedAtDesc(
+        String nameQuery,
+        String descriptionQuery
+    );
     List<Product> findBySellerOrderByCreatedAtDesc(User seller);
     Optional<Product> findByIdAndSeller(Long id, User seller);
     long countBySeller(User seller);
