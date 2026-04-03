@@ -72,6 +72,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public
                 .requestMatchers("/", "/search").permitAll()
+                .requestMatchers("/products/**").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/access-denied").permitAll()

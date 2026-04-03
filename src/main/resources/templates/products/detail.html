@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/navbar :: head('Product Details')}"></head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="main">
+  <section class="section">
+    <div class="container">
+      <article class="product-detail">
+        <div class="product-detail-image">
+          <img th:if="${product.imageFilename != null}"
+               th:src="@{/products/{id}/image(id=${product.id})}"
+               th:alt="${product.name}" />
+          <div th:if="${product.imageFilename == null}" class="product-detail-empty">
+            No image uploaded
+          </div>
+        </div>
+
+        <div class="product-detail-body">
+          <h1 th:text="${product.name}">Product Name</h1>
+          <p class="muted"
+             th:text="${'Seller: ' + (product.seller != null ? product.seller.username : 'Unknown')}">
+            Seller: username
+          </p>
+          <p class="product-detail-price"
+             th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
+          <p class="product-detail-stock"
+             th:text="${product.stock > 0 ? product.stock + ' in stock' : 'Out of stock'}">0 in stock</p>
+          <p class="product-detail-description"
+             th:text="${product.description != null and !#strings.isEmpty(product.description) ? product.description : 'No description provided.'}">
+            Product description.
+          </p>
+          <a th:href="@{/}" class="btn btn-outline">Back to marketplace</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
