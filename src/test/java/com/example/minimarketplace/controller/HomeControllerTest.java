@@ -1,51 +1,39 @@
 package com.example.minimarketplace.controller;
 
-import com.example.minimarketplace.entity.User;
-import com.example.minimarketplace.service.UserService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.ui.ExtendedModelMap;
+import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class HomeControllerTest {
 
-    @Mock
-    private UserService userService;
-
-    @InjectMocks
-    private HomeController homeController;
+    private final HomeController homeController = new HomeController();
 
     @Test
-    void homeShouldPopulateUserContextForAuthenticatedUser() {
-        User user = User.builder().username("seller1").build();
-        var auth = new TestingAuthenticationToken("seller1", "pw", "ROLE_SELLER");
-        var model = new ExtendedModelMap();
+    void homeShouldRedirectGuestUsersToLogin() {
+        String view = homeController.home(null);
 
-        when(userService.findByUsername("seller1")).thenReturn(user);
-
-        String view = homeController.home(auth, model);
-
-        assertThat(view).isEqualTo("home");
-        assertThat(model.getAttribute("username")).isEqualTo("seller1");
-        assertThat(model.getAttribute("role")).isEqualTo("SELLER");
-        assertThat(model.getAttribute("user")).isEqualTo(user);
+        assertThat(view).isEqualTo("redirect:/auth/login");
     }
 
     @Test
-    void searchShouldKeepQueryForGuestUsers() {
-        var model = new ExtendedModelMap();
+    void homeShouldRedirectSellerUsersToSellerDashboard() {
+        var auth = new TestingAuthenticationToken("seller1", "pw", "ROLE_SELLER");
 
-        String view = homeController.search("laptop", null, model);
+        String view = homeController.home(auth);
 
-        assertThat(view).isEqualTo("home");
-        assertThat(model.getAttribute("searchQuery")).isEqualTo("laptop");
-        assertThat(model.getAttribute("username")).isNull();
+        assertThat(view).isEqualTo("redirect:/seller/dashboard");
+    }
+
+    @Test
+    void searchShouldRedirectBuyerUsersToDashboardWithQuery() {
+        var auth = new TestingAuthenticationToken("buyer1", "pw", "ROLE_BUYER");
+        var redirectAttributes = new RedirectAttributesModelMap();
+
+        String view = homeController.search("laptop", auth, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/buyer/dashboard");
+        assertThat(redirectAttributes.getAttribute("q")).isEqualTo("laptop");
     }
 }
