@@ -2,6 +2,8 @@ package com.example.minimarketplace.repository;
 
 import com.example.minimarketplace.entity.Product;
 import com.example.minimarketplace.entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +15,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findBySellerOrderByCreatedAtDesc(User seller);
     Optional<Product> findByIdAndSeller(Long id, User seller);
     long countBySeller(User seller);
+
+    @EntityGraph(attributePaths = "seller")
+    List<Product> findTop12ByStockGreaterThanAndSellerNotOrderByCreatedAtDesc(Integer stock, User seller);
+
+    @EntityGraph(attributePaths = "seller")
+    List<Product> findTop12ByStockGreaterThanOrderByCreatedAtDesc(Integer stock);
+
+    @EntityGraph(attributePaths = "seller")
+    List<Product> findByStockGreaterThanOrderByCreatedAtDesc(Integer stock);
+
+    long countByStockGreaterThan(Integer stock);
+
+    @Query("select count(distinct p.seller.id) from Product p where p.stock > 0")
+    long countDistinctSellersWithStock();
 }

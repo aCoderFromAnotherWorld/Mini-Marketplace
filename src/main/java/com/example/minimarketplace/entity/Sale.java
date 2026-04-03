@@ -25,6 +25,10 @@ public class Sale {
     private User seller;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id")
+    private User buyer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
