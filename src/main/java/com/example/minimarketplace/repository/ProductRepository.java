@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findAllByOrderByCreatedAtDesc();
     List<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByCreatedAtDesc(
         String nameQuery,
         String descriptionQuery

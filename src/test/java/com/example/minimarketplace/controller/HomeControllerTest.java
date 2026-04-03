@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HomeControllerTest {
@@ -31,10 +32,16 @@ class HomeControllerTest {
     private HomeController homeController;
 
     @Test
-    void homeShouldRedirectBuyerToDashboard() {
-        var auth = new TestingAuthenticationToken("buyer1", "pw", "ROLE_BUYER");
+    void homeShouldPopulateUserContextForAuthenticatedUser() {
+        User user = User.builder().username("seller1").build();
+        var auth = new TestingAuthenticationToken("seller1", "pw", "ROLE_SELLER");
         var model = new ExtendedModelMap();
-        Product product = Product.builder().id(1L).name("Keyboard Shortcuts Guide").price(BigDecimal.valueOf(9.99)).stock(5).build();
+        Product product = Product.builder()
+            .id(1L)
+            .name("Keyboard Shortcuts Guide")
+            .price(BigDecimal.valueOf(9.99))
+            .stock(5)
+            .build();
 
         when(userService.findByUsername("seller1")).thenReturn(user);
         when(productRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(product));
@@ -51,7 +58,13 @@ class HomeControllerTest {
     @Test
     void searchShouldKeepQueryForGuestUsers() {
         var model = new ExtendedModelMap();
-        Product product = Product.builder().id(2L).name("Laptop Mockup Kit").price(BigDecimal.valueOf(14.99)).stock(2).build();
+        Product product = Product.builder()
+            .id(2L)
+            .name("Laptop Mockup Kit")
+            .price(BigDecimal.valueOf(14.99))
+            .stock(2)
+            .build();
+
         when(productRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrderByCreatedAtDesc("laptop", "laptop"))
             .thenReturn(List.of(product));
 
@@ -66,7 +79,12 @@ class HomeControllerTest {
     @Test
     void productDetailsShouldLoadRequestedProduct() {
         var model = new ExtendedModelMap();
-        Product product = Product.builder().id(99L).name("UI Kit").price(BigDecimal.valueOf(19.99)).stock(8).build();
+        Product product = Product.builder()
+            .id(99L)
+            .name("UI Kit")
+            .price(BigDecimal.valueOf(19.99))
+            .stock(8)
+            .build();
 
         when(productRepository.findById(99L)).thenReturn(Optional.of(product));
 
