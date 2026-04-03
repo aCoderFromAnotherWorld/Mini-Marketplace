@@ -1,12 +1,9 @@
-<<<<<<< HEAD
-=======
 # ──────────────────────────────────────────────────────────────────────
 #  docker-compose.yml  — FULL STACK (app + postgres)
 #  Run with:  docker compose up --build
 #  Uses env vars from .env  (copy .env.example → .env first)
 #  Keep DB defaults aligned with compose.yaml so both local modes use one DB target.
 # ──────────────────────────────────────────────────────────────────────
->>>>>>> d49989a289ccff579f32903510902ff6d2f17285
 services:
   db:
     image: 'postgres:latest'
@@ -15,9 +12,6 @@ services:
       - 'POSTGRES_PASSWORD=1234'
       - 'POSTGRES_USER=postgres'
     ports:
-<<<<<<< HEAD
-      - '5432:5432'
-=======
       - "${DB_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -62,4 +56,3 @@ volumes:
 networks:
   minimarket-net:
     name: minimarket-net
->>>>>>> d49989a289ccff579f32903510902ff6d2f17285
