@@ -7,6 +7,7 @@ import com.example.minimarketplace.entity.Sale;
 import com.example.minimarketplace.entity.User;
 import com.example.minimarketplace.service.BuyerDashboardService;
 import com.example.minimarketplace.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,10 +18,13 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +39,9 @@ class BuyerControllerTest {
 
     @Mock
     private Authentication authentication;
+
+    @Mock
+    private HttpSession session;
 
     @InjectMocks
     private BuyerController buyerController;
@@ -139,6 +146,51 @@ class BuyerControllerTest {
         assertThat(view).isEqualTo("redirect:/buyer/seller-request");
         assertThat(redirectAttributes.getFlashAttributes().get("errorMsg"))
             .isEqualTo("You already have a pending request.");
+    }
+
+    @Test
+    void addToCartShouldStoreQuantityAndRedirect() {
+        var redirectAttributes = new RedirectAttributesModelMap();
+        Map<Long, Integer> cart = new LinkedHashMap<>();
+        when(session.getAttribute("buyerCart")).thenReturn(cart);
+
+        String view = buyerController.addToCart(9L, 2, "/buyer/cart", session, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/buyer/cart");
+        assertThat(redirectAttributes.getFlashAttributes().get("successMsg"))
+            .isEqualTo("Added to cart.");
+        verify(session, atLeastOnce()).setAttribute("buyerCart", Map.of(9L, 2));
+    }
+
+    @Test
+    void checkoutCartShouldClearSessionAndSetSuccessMessage() {
+        var redirectAttributes = new RedirectAttributesModelMap();
+        Map<Long, Integer> cart = new LinkedHashMap<>();
+        cart.put(7L, 1);
+
+        when(authentication.getName()).thenReturn("buyer1");
+        when(session.getAttribute("buyerCart")).thenReturn(cart);
+        when(buyerDashboardService.checkoutCart("buyer1", Map.of(7L, 1))).thenReturn(1);
+
+        String view = buyerController.checkoutCart(authentication, session, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/buyer/cart");
+        assertThat(redirectAttributes.getFlashAttributes().get("successMsg"))
+            .isEqualTo("Checkout complete for 1 cart item(s).");
+        verify(buyerDashboardService).checkoutCart("buyer1", Map.of(7L, 1));
+    }
+
+    @Test
+    void updateAddressShouldCallUserServiceAndRedirectToAccount() {
+        var redirectAttributes = new RedirectAttributesModelMap();
+        when(authentication.getName()).thenReturn("buyer1");
+
+        String view = buyerController.updateAddress("Dhaka, Bangladesh", authentication, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/buyer/account");
+        assertThat(redirectAttributes.getFlashAttributes().get("successMsg"))
+            .isEqualTo("Shipping address updated.");
+        verify(userService).updateShippingAddress("buyer1", "Dhaka, Bangladesh");
     }
 
     @Test
