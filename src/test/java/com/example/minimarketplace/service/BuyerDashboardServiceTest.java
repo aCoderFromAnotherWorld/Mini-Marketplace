@@ -18,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -179,5 +181,61 @@ class BuyerDashboardServiceTest {
         assertThat(payload.filename()).isEqualTo("bundle.zip");
         assertThat(payload.contentType()).isEqualTo("application/zip");
         assertThat(payload.data()).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    void loadCartShouldReturnLineTotalsAndWarnings() {
+        User buyer = User.builder().id(2L).username("buyer1").build();
+        User seller = User.builder().id(5L).username("seller1").build();
+        Product inStock = Product.builder()
+            .id(9L)
+            .seller(seller)
+            .name("Prompt Pack")
+            .price(new BigDecimal("9.99"))
+            .stock(5)
+            .build();
+        Product lowStock = Product.builder()
+            .id(10L)
+            .seller(seller)
+            .name("Template Set")
+            .price(new BigDecimal("5.00"))
+            .stock(1)
+            .build();
+        Map<Long, Integer> cart = new LinkedHashMap<>();
+        cart.put(9L, 2);
+        cart.put(10L, 3);
+
+        when(userRepository.findByUsername("buyer1")).thenReturn(Optional.of(buyer));
+        when(productRepository.findByIdIn(List.of(9L, 10L))).thenReturn(List.of(inStock, lowStock));
+
+        var lines = buyerDashboardService.loadCart("buyer1", cart);
+
+        assertThat(lines).hasSize(2);
+        assertThat(lines.get(0).lineTotal()).isEqualByComparingTo("19.98");
+        assertThat(lines.get(0).purchasable()).isTrue();
+        assertThat(lines.get(1).purchasable()).isFalse();
+        assertThat(lines.get(1).warning()).contains("Only 1 available");
+    }
+
+    @Test
+    void checkoutCartShouldCreateSalesAndDecreaseStock() {
+        User buyer = User.builder().id(2L).username("buyer1").build();
+        User seller = User.builder().id(5L).username("seller1").build();
+        Product first = Product.builder().id(9L).seller(seller).price(new BigDecimal("10.00")).stock(3).build();
+        Product second = Product.builder().id(10L).seller(seller).price(new BigDecimal("4.00")).stock(2).build();
+        Map<Long, Integer> cart = new LinkedHashMap<>();
+        cart.put(9L, 2);
+        cart.put(10L, 1);
+
+        when(userRepository.findByUsername("buyer1")).thenReturn(Optional.of(buyer));
+        when(productRepository.findByIdIn(List.of(9L, 10L))).thenReturn(List.of(first, second));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(saleRepository.save(any(Sale.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        int count = buyerDashboardService.checkoutCart("buyer1", cart);
+
+        assertThat(count).isEqualTo(2);
+        assertThat(first.getStock()).isEqualTo(1);
+        assertThat(second.getStock()).isEqualTo(1);
     }
 }

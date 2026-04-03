@@ -18,9 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -77,37 +80,71 @@ public class BuyerDashboardService {
             .orElseThrow(() -> new RuntimeException("Product not found."));
 
         int normalizedQuantity = normalizeQuantity(quantity);
-        if (product.getSeller() != null && product.getSeller().getId() != null
-            && product.getSeller().getId().equals(buyer.getId())) {
-            throw new RuntimeException("You cannot purchase your own product.");
-        }
-        if (product.getStock() == null || product.getStock() <= 0) {
-            throw new RuntimeException("This product is currently out of stock.");
-        }
-        if (product.getStock() < normalizedQuantity) {
-            throw new RuntimeException("Only " + product.getStock() + " item(s) are available right now.");
-        }
-
-        BigDecimal unitPrice = scaleMoney(product.getPrice());
-        BigDecimal totalAmount = unitPrice
-            .multiply(BigDecimal.valueOf(normalizedQuantity))
-            .setScale(2, RoundingMode.HALF_UP);
-
-        product.setStock(product.getStock() - normalizedQuantity);
-        productRepository.save(product);
-
-        Sale sale = Sale.builder()
-            .seller(product.getSeller())
-            .buyer(buyer)
-            .product(product)
-            .quantity(normalizedQuantity)
-            .unitPrice(unitPrice)
-            .totalAmount(totalAmount)
-            .build();
-
-        Sale saved = saleRepository.save(sale);
+        validatePurchasable(buyer, product, normalizedQuantity);
+        Sale saved = createSale(buyer, product, normalizedQuantity);
         log.info("Buyer '{}' purchased product #{} qty {}", username, productId, normalizedQuantity);
         return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CartLine> loadCart(String username, Map<Long, Integer> cartItems) {
+        if (cartItems == null || cartItems.isEmpty()) {
+            return List.of();
+        }
+
+        User buyer = getUser(username);
+        Map<Long, Product> productMap = loadProductsByIdsInOrder(cartItems.keySet());
+        List<CartLine> lines = new ArrayList<>();
+
+        for (Map.Entry<Long, Integer> entry : cartItems.entrySet()) {
+            Product product = productMap.get(entry.getKey());
+            if (product == null) {
+                continue;
+            }
+
+            int quantity = Math.max(1, Optional.ofNullable(entry.getValue()).orElse(1));
+            BigDecimal lineTotal = scaleMoney(product.getPrice())
+                .multiply(BigDecimal.valueOf(quantity))
+                .setScale(2, RoundingMode.HALF_UP);
+            String warning = evaluateCartWarning(buyer, product, quantity);
+            lines.add(new CartLine(product, quantity, lineTotal, warning == null, warning));
+        }
+
+        return lines;
+    }
+
+    @Transactional
+    public int checkoutCart(String username, Map<Long, Integer> cartItems) {
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new RuntimeException("Your cart is empty.");
+        }
+
+        User buyer = getUser(username);
+        Map<Long, Product> productMap = loadProductsByIdsInOrder(cartItems.keySet());
+        if (productMap.isEmpty()) {
+            throw new RuntimeException("Your cart items are no longer available.");
+        }
+
+        for (Map.Entry<Long, Integer> entry : cartItems.entrySet()) {
+            Product product = productMap.get(entry.getKey());
+            if (product == null) {
+                throw new RuntimeException("A product in your cart is no longer available.");
+            }
+            int quantity = normalizeQuantity(entry.getValue());
+            validatePurchasable(buyer, product, quantity);
+        }
+
+        int created = 0;
+        for (Map.Entry<Long, Integer> entry : cartItems.entrySet()) {
+            Product product = productMap.get(entry.getKey());
+            if (product == null) {
+                continue;
+            }
+            int quantity = normalizeQuantity(entry.getValue());
+            createSale(buyer, product, quantity);
+            created++;
+        }
+        return created;
     }
 
     @Transactional(readOnly = true)
@@ -273,6 +310,80 @@ public class BuyerDashboardService {
         return quantity;
     }
 
+    private Map<Long, Product> loadProductsByIdsInOrder(Iterable<Long> ids) {
+        List<Long> normalizedIds = new ArrayList<>();
+        for (Long id : ids) {
+            if (id != null && !normalizedIds.contains(id)) {
+                normalizedIds.add(id);
+            }
+        }
+        if (normalizedIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Product> loaded = new LinkedHashMap<>();
+        for (Product product : productRepository.findByIdIn(normalizedIds)) {
+            if (product.getId() != null) {
+                loaded.put(product.getId(), product);
+            }
+        }
+
+        Map<Long, Product> ordered = new LinkedHashMap<>();
+        for (Long id : normalizedIds) {
+            Product product = loaded.get(id);
+            if (product != null) {
+                ordered.put(id, product);
+            }
+        }
+        return ordered;
+    }
+
+    private void validatePurchasable(User buyer, Product product, int quantity) {
+        if (isOwnProduct(product, buyer)) {
+            throw new RuntimeException("You cannot purchase your own product.");
+        }
+        if (product.getStock() == null || product.getStock() <= 0) {
+            throw new RuntimeException("This product is currently out of stock.");
+        }
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Only " + product.getStock() + " item(s) are available right now.");
+        }
+    }
+
+    private String evaluateCartWarning(User buyer, Product product, int quantity) {
+        if (isOwnProduct(product, buyer)) {
+            return "You cannot buy your own product.";
+        }
+        if (product.getStock() == null || product.getStock() <= 0) {
+            return "Out of stock right now.";
+        }
+        if (product.getStock() < quantity) {
+            return "Only " + product.getStock() + " available. Update quantity before checkout.";
+        }
+        return null;
+    }
+
+    private Sale createSale(User buyer, Product product, int quantity) {
+        BigDecimal unitPrice = scaleMoney(product.getPrice());
+        BigDecimal totalAmount = unitPrice
+            .multiply(BigDecimal.valueOf(quantity))
+            .setScale(2, RoundingMode.HALF_UP);
+
+        product.setStock(product.getStock() - quantity);
+        productRepository.save(product);
+
+        Sale sale = Sale.builder()
+            .seller(product.getSeller())
+            .buyer(buyer)
+            .product(product)
+            .quantity(quantity)
+            .unitPrice(unitPrice)
+            .totalAmount(totalAmount)
+            .build();
+
+        return saleRepository.save(sale);
+    }
+
     private BigDecimal scaleMoney(BigDecimal value) {
         if (value == null) {
             return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
@@ -284,5 +395,8 @@ public class BuyerDashboardService {
     }
 
     public record ProductAssetPayload(byte[] data, String contentType, String filename) {
+    }
+
+    public record CartLine(Product product, int quantity, BigDecimal lineTotal, boolean purchasable, String warning) {
     }
 }
