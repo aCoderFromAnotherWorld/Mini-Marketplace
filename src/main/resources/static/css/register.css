@@ -1,0 +1,9 @@
+@import url("/css/auth-common.css");
+
+.register-page .auth-card {
+  max-width: 440px;
+}
+
+.register-page .auth-icon {
+  color: var(--success);
+}

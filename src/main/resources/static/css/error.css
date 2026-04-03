@@ -1,0 +1,89 @@
+@import url("/css/auth-common.css");
+
+.error-page .auth-card {
+  max-width: 680px;
+}
+
+.error-card {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.error-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  background: var(--error-lt);
+  color: var(--error);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.error-title {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.05;
+}
+
+.error-summary {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.error-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.error-meta-label {
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.error-mono {
+  word-break: break-word;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.error-details {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.error-details summary {
+  cursor: pointer;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+}
+
+.error-trace {
+  overflow-x: auto;
+  padding: 0 1rem 1rem;
+  color: #334155;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (max-width: 640px) {
+  .error-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

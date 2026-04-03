@@ -1,0 +1,19 @@
+@import url("/css/buyer-common.css");
+
+.buyer-dashboard-page .buyer-sidebar {
+  position: sticky;
+  top: 84px;
+  align-self: start;
+}
+
+.buyer-dashboard-page .buyer-main,
+.buyer-dashboard-page .buyer-catalog-surface,
+.buyer-dashboard-page .buyer-side-surface {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .buyer-dashboard-page .buyer-sidebar {
+    position: static;
+  }
+}

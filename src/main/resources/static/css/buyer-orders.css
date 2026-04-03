@@ -1,0 +1,25 @@
+@import url("/css/buyer-common.css");
+
+.buyer-orders-page .buyer-orders-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 84px;
+  align-self: start;
+}
+
+.buyer-orders-page .buyer-orders-surface,
+.buyer-orders-page .buyer-orders-side {
+  min-width: 0;
+}
+
+.buyer-orders-page .buyer-order-card-actions {
+  min-width: 145px;
+}
+
+@media (max-width: 1100px) {
+  .buyer-orders-page .buyer-orders-side {
+    position: static;
+  }
+}

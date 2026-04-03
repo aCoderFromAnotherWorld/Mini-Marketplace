@@ -1,0 +1,13 @@
+@import url("/css/auth-common.css");
+
+.seller-request-page .auth-card {
+  max-width: 480px;
+}
+
+.seller-request-page .auth-icon {
+  color: var(--buyer);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

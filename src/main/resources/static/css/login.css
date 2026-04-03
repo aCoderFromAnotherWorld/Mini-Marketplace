@@ -1,0 +1,9 @@
+@import url("/css/auth-common.css");
+
+.login-page .auth-card {
+  max-width: 420px;
+}
+
+.login-page .auth-icon {
+  color: var(--primary);
+}
