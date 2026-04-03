@@ -122,4 +122,20 @@ class UserServiceTest {
         verify(userRepository).save(buyer);
         verify(sellerRequestRepository).save(request);
     }
+
+    @Test
+    void updateShippingAddressShouldTrimAndPersistValue() {
+        User buyer = User.builder()
+            .username("buyer1")
+            .enabled(true)
+            .build();
+
+        when(userRepository.findByUsername("buyer1")).thenReturn(Optional.of(buyer));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User updated = userService.updateShippingAddress("buyer1", "  123 Main St, Dhaka  ");
+
+        assertThat(updated.getShippingAddress()).isEqualTo("123 Main St, Dhaka");
+        verify(userRepository).save(buyer);
+    }
 }

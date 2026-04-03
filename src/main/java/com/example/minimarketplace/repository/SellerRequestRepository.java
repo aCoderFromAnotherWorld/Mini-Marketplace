@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface SellerRequestRepository extends JpaRepository<SellerRequest, Long> {
     List<SellerRequest>     findByStatus(RequestStatus status);
     Optional<SellerRequest> findByUserAndStatus(User user, RequestStatus status);
+    Optional<SellerRequest> findTopByUserOrderByRequestedAtDesc(User user);
     boolean                 existsByUserAndStatus(User user, RequestStatus status);
     List<SellerRequest>     findByUserOrderByRequestedAtDesc(User user);
 }

@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/navbar :: head('Become a Seller')}"></head>
-<body class="auth-page">
+<body class="auth-page seller-request-page">
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main class="auth-main">
   <div class="auth-card">
     <div class="auth-header">
-      <div class="auth-icon">🏪</div>
+      <div class="auth-icon">Store</div>
       <h1>Become a Seller</h1>
-      <p>Submit a request — the admin will review it shortly.</p>
+      <p>Submit a quick request and the admin can review your seller upgrade.</p>
     </div>
 
-    <div th:if="${successMsg}" class="alert alert-success"><span>✓</span><span th:text="${successMsg}"></span></div>
-    <div th:if="${errorMsg}"   class="alert alert-error">  <span>✕</span><span th:text="${errorMsg}"></span></div>
+    <div th:if="${successMsg}" class="alert alert-success"><span>OK</span><span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
 
     <form th:action="@{/buyer/seller-request}" method="post" class="auth-form">
       <div class="field">
         <label for="note">Why do you want to sell? (optional)</label>
-        <textarea id="note" name="note" rows="4"
-                  style="resize:vertical;font-family:inherit;font-size:.9rem;padding:.6rem .9rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);width:100%"
-                  placeholder="Tell us what you plan to sell…"></textarea>
+        <textarea id="note" name="note" rows="4" class="auth-textarea"
+                  placeholder="Tell us what you plan to sell..."></textarea>
       </div>
       <button type="submit" class="btn btn-primary btn-full">Submit request</button>
     </form>
 
-    <a th:href="@{/}" class="btn btn-outline btn-full" style="margin-top:.75rem">← Back to marketplace</a>
+    <a th:href="@{/buyer/dashboard}" class="btn btn-outline btn-full auth-secondary-action">Back to buyer dashboard</a>
   </div>
 </main>
 </body>
