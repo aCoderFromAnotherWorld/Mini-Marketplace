@@ -104,6 +104,17 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("User not found: " + username));
     }
 
+    @Transactional
+    public User updateShippingAddress(String username, String shippingAddress) {
+        User user = findByUsername(username);
+        String normalized = shippingAddress == null ? "" : shippingAddress.trim();
+        if (normalized.length() > 400) {
+            throw new RuntimeException("Shipping address must be 400 characters or fewer.");
+        }
+        user.setShippingAddress(normalized.isBlank() ? null : normalized);
+        return userRepository.save(user);
+    }
+
     @Transactional(readOnly = true)
     public List<User> findAll() {
         return userRepository.findAll();

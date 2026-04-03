@@ -7,7 +7,6 @@ import com.example.minimarketplace.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.ui.ExtendedModelMap;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HomeControllerTest {
@@ -32,9 +30,8 @@ class HomeControllerTest {
     private HomeController homeController;
 
     @Test
-    void homeShouldPopulateUserContextForAuthenticatedUser() {
-        User user = User.builder().username("seller1").build();
-        var auth = new TestingAuthenticationToken("seller1", "pw", "ROLE_SELLER");
+    void homeShouldRedirectBuyerToDashboard() {
+        var auth = new TestingAuthenticationToken("buyer1", "pw", "ROLE_BUYER");
         var model = new ExtendedModelMap();
         Product product = Product.builder().id(1L).name("Keyboard Shortcuts Guide").price(BigDecimal.valueOf(9.99)).stock(5).build();
 

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/navbar :: head('Buyer Home')}"></head>
+<body class="buyer-store-body">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="main buyer-store-page">
+  <div class="container buyer-store-shell">
+    <header class="buyer-page-top">
+      <div>
+        <p class="buyer-page-eyebrow">MiniMarket Buyer</p>
+        <h1>Home</h1>
+        <p class="muted">Discover products from all sellers, add items to cart, and buy in one click.</p>
+      </div>
+      <div class="buyer-promo-rotator" aria-label="Store promotions">
+        <div class="buyer-promo-track">
+          <article class="buyer-promo-card buyer-promo-discount">
+            <span>Discount product</span>
+            <strong>Up to 40% OFF</strong>
+            <p>Limited markdowns on digital bundles from top sellers.</p>
+          </article>
+          <article class="buyer-promo-card buyer-promo-hot">
+            <span>Hot deal</span>
+            <strong>Flash drops</strong>
+            <p>Trending assets and templates updated every day.</p>
+          </article>
+        </div>
+      </div>
+    </header>
+
+    <nav class="buyer-section-tabs" aria-label="Buyer sections">
+      <a th:href="@{/buyer/dashboard}" class="buyer-tab is-active">Home</a>
+      <a th:href="@{/buyer/cart}" class="buyer-tab">
+        Cart
+        <span class="buyer-tab-count" th:text="${cartItemCount != null ? cartItemCount : 0}">0</span>
+      </a>
+      <a th:href="@{/buyer/orders}" class="buyer-tab">My Orders</a>
+      <a th:href="@{/buyer/account}" class="buyer-tab">Account</a>
+    </nav>
+
+    <div th:if="${successMsg}" class="alert alert-success"><span>OK</span><span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
+
+    <section class="buyer-home-layout">
+      <section class="buyer-home-main">
+        <div class="buyer-panel">
+          <div class="buyer-panel-head">
+            <div>
+              <p class="buyer-page-eyebrow">Catalog</p>
+              <h2>All seller products</h2>
+            </div>
+            <div class="buyer-view-toggle">
+              <a th:href="@{/buyer/dashboard(q=${catalogQuery}, seller=${catalogSeller}, sort=${catalogSort}, view='grid')}"
+                 class="buyer-view-chip"
+                 th:classappend="${catalogView == 'grid' ? ' is-active' : ''}">Grid</a>
+              <a th:href="@{/buyer/dashboard(q=${catalogQuery}, seller=${catalogSeller}, sort=${catalogSort}, view='list')}"
+                 class="buyer-view-chip"
+                 th:classappend="${catalogView == 'list' ? ' is-active' : ''}">List</a>
+            </div>
+          </div>
+
+          <form th:action="@{/buyer/dashboard}" method="get" class="buyer-filter-bar">
+            <div class="field">
+              <label for="catalogQuery">Search</label>
+              <input id="catalogQuery" type="text" name="q" th:value="${catalogQuery}"
+                     placeholder="Product, seller, or keyword"/>
+            </div>
+            <div class="field">
+              <label for="catalogSeller">Seller</label>
+              <select id="catalogSeller" name="seller">
+                <option value="">All sellers</option>
+                <option th:each="sellerName : ${sellerOptions}"
+                        th:value="${sellerName}"
+                        th:selected="${sellerName == catalogSeller}"
+                        th:text="${sellerName}">seller</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="catalogSort">Sort</label>
+              <select id="catalogSort" name="sort">
+                <option value="featured" th:selected="${catalogSort == 'featured'}">Featured</option>
+                <option value="newest" th:selected="${catalogSort == 'newest'}">Newest</option>
+                <option value="priceAsc" th:selected="${catalogSort == 'priceAsc'}">Price: Low to High</option>
+                <option value="priceDesc" th:selected="${catalogSort == 'priceDesc'}">Price: High to Low</option>
+                <option value="name" th:selected="${catalogSort == 'name'}">Name</option>
+              </select>
+            </div>
+            <input type="hidden" name="view" th:value="${catalogView}"/>
+            <div class="buyer-filter-actions">
+              <button class="btn btn-primary">Apply</button>
+              <a th:href="@{/buyer/dashboard}" class="btn btn-outline">Reset</a>
+            </div>
+          </form>
+
+          <div class="buyer-filter-summary"
+               th:if="${!#strings.isEmpty(catalogQuery) or !#strings.isEmpty(catalogSeller) or catalogSort != 'featured'}">
+            <span th:if="${!#strings.isEmpty(catalogQuery)}" class="buyer-filter-pill"
+                  th:text="${'Search: ' + catalogQuery}">Search</span>
+            <span th:if="${!#strings.isEmpty(catalogSeller)}" class="buyer-filter-pill"
+                  th:text="${'Seller: ' + catalogSeller}">Seller</span>
+            <span th:if="${catalogSort != 'featured'}" class="buyer-filter-pill"
+                  th:text="${'Sort: ' + catalogSort}">Sort</span>
+          </div>
+
+          <div th:if="${#lists.isEmpty(marketplacePicks)}" class="empty-box">
+            No products found for the current filters.
+          </div>
+
+          <div th:if="${!#lists.isEmpty(marketplacePicks) and catalogView == 'grid'}" class="buyer-product-grid">
+            <article class="buyer-product-card" th:each="product : ${marketplacePicks}">
+              <div class="buyer-product-media">
+                <img th:if="${product.imageFilename != null}"
+                     th:src="@{/buyer/products/{id}/image(id=${product.id})}"
+                     th:alt="${product.name}"/>
+                <div th:if="${product.imageFilename == null}" class="buyer-product-fallback"
+                     th:text="${product.name != null and !#strings.isEmpty(product.name) ? #strings.toUpperCase(#strings.substring(product.name, 0, 1)) : 'P'}">P</div>
+              </div>
+              <div class="buyer-product-body">
+                <div class="buyer-product-meta">
+                  <span class="buyer-chip">Digital</span>
+                  <span class="buyer-chip buyer-chip-soft" th:if="${product.assetFilename != null}">Downloadable</span>
+                </div>
+                <h3 th:text="${product.name}">Product</h3>
+                <p class="muted"
+                   th:text="${product.seller != null ? 'by ' + product.seller.username : 'Marketplace seller'}">seller</p>
+                <p class="buyer-product-description"
+                   th:text="${product.description != null and !#strings.isEmpty(product.description) ? product.description : 'No description available.'}">
+                  Description
+                </p>
+                <div class="buyer-price-row">
+                  <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+                  <span th:if="${product.stock > 0}" class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                  <span th:if="${product.stock <= 0}" class="buyer-stock-note buyer-stock-note-out">Out of stock</span>
+                </div>
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/cart/add}" method="post" class="buyer-card-form">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <label class="buyer-qty-label">
+                    Qty
+                    <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
+                  </label>
+                  <button class="btn btn-outline btn-sm">Add to cart</button>
+                </form>
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/purchase}" method="post" class="buyer-card-form">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <label class="buyer-qty-label">
+                    Qty
+                    <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
+                  </label>
+                  <button class="btn btn-primary btn-sm">Buy now</button>
+                </form>
+                <form th:if="${product.stock <= 0}" th:action="@{/buyer/wishlist/add}" method="post" class="buyer-card-form">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <button class="btn btn-wishlist btn-sm">Add to wishlist</button>
+                </form>
+              </div>
+            </article>
+          </div>
+
+          <div th:if="${!#lists.isEmpty(marketplacePicks) and catalogView == 'list'}" class="buyer-product-list">
+            <article class="buyer-product-row" th:each="product : ${marketplacePicks}">
+              <div class="buyer-product-row-media">
+                <img th:if="${product.imageFilename != null}"
+                     th:src="@{/buyer/products/{id}/image(id=${product.id})}"
+                     th:alt="${product.name}"/>
+                <div th:if="${product.imageFilename == null}" class="buyer-product-fallback"
+                     th:text="${product.name != null and !#strings.isEmpty(product.name) ? #strings.toUpperCase(#strings.substring(product.name, 0, 1)) : 'P'}">P</div>
+              </div>
+              <div class="buyer-product-row-info">
+                <h3 th:text="${product.name}">Product</h3>
+                <p class="muted"
+                   th:text="${product.seller != null ? 'by ' + product.seller.username : 'Marketplace seller'}">seller</p>
+                <p class="buyer-product-description"
+                   th:text="${product.description != null and !#strings.isEmpty(product.description) ? product.description : 'No description available.'}">
+                  Description
+                </p>
+              </div>
+              <div class="buyer-product-row-buy">
+                <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+                <span th:if="${product.stock > 0}" class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                <span th:if="${product.stock <= 0}" class="buyer-stock-note buyer-stock-note-out">Out of stock</span>
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/cart/add}" method="post" class="buyer-card-form buyer-card-form-stack">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <label class="buyer-qty-label">
+                    Qty
+                    <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
+                  </label>
+                  <button class="btn btn-outline btn-sm">Add to cart</button>
+                </form>
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/purchase}" method="post" class="buyer-card-form buyer-card-form-stack">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <label class="buyer-qty-label">
+                    Qty
+                    <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
+                  </label>
+                  <button class="btn btn-primary btn-sm">Buy now</button>
+                </form>
+                <form th:if="${product.stock <= 0}" th:action="@{/buyer/wishlist/add}" method="post" class="buyer-card-form buyer-card-form-stack">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <button class="btn btn-wishlist btn-sm">Add to wishlist</button>
+                </form>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+</main>
+</body>
+</html>
