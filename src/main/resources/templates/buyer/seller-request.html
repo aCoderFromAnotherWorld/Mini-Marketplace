@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Become a Seller - MiniMarket</title>
-  <link rel="stylesheet" th:href="@{/css/base.css}"/>
-  <link rel="stylesheet" th:href="@{/css/seller-request.css}"/>
-</head>
+<head th:replace="~{fragments/navbar :: head('Become a Seller')}"></head>
 <body class="auth-page seller-request-page">
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main class="auth-main">
