@@ -1,21 +1,160 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments/navbar :: head('My Orders')}"></head>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Orders - MiniMarket</title>
+  <link rel="stylesheet" th:href="@{/css/base.css}"/>
+  <link rel="stylesheet" th:href="@{/css/buyer-orders.css}"/>
+</head>
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
-<main class="main">
-<div class="container" style="padding:2rem 1.5rem">
-  <div class="page-header">
-    <span class="mode-pill pill-buyer">BUYER</span>
-    <h1>My Orders</h1>
-    <p class="muted">Your purchase history, <span sec:authentication="name">buyer</span>.</p>
+
+<main class="main buyer-page buyer-pro-page buyer-orders-page">
+  <div class="container buyer-orders-wrap">
+    <section class="buyer-orders-hero">
+      <div>
+        <span class="mode-pill pill-buyer">Orders & Downloads</span>
+        <h1>Your digital order workspace</h1>
+        <p class="muted">Search past purchases, jump straight to downloadable files, and buy the next product without leaving your account.</p>
+      </div>
+      <div class="buyer-orders-hero-actions">
+        <a th:href="@{/buyer/dashboard}" class="btn btn-outline">Back to Dashboard</a>
+        <a th:href="@{/buyer/dashboard(view='list')}" class="btn btn-primary">Browse Catalog</a>
+      </div>
+    </section>
+
+    <div th:if="${successMsg}" class="alert alert-success"><span>OK</span><span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
+
+    <section class="buyer-orders-grid">
+      <section class="buyer-surface buyer-orders-surface">
+        <div class="buyer-surface-head">
+          <div>
+            <p class="buyer-kicker">History</p>
+            <h2>Filter your orders</h2>
+          </div>
+        </div>
+
+        <form th:action="@{/buyer/orders}" method="get" class="buyer-toolbar buyer-toolbar-orders">
+          <div class="field">
+            <label for="orderQuery">Search orders</label>
+            <input id="orderQuery" type="text" name="q" th:value="${orderQuery}"
+                   placeholder="Search by product or seller"/>
+          </div>
+          <div class="field buyer-check-field">
+            <label for="downloadsOnly">Downloads only</label>
+            <input id="downloadsOnly" type="checkbox" name="downloadsOnly" value="true" th:checked="${downloadsOnly}"/>
+          </div>
+          <div class="buyer-toolbar-actions">
+            <button class="btn btn-primary">Apply</button>
+            <a th:href="@{/buyer/orders}" class="btn btn-outline">Reset</a>
+          </div>
+        </form>
+
+        <div class="buyer-filter-summary" th:if="${!#strings.isEmpty(orderQuery) or downloadsOnly}">
+          <span th:if="${!#strings.isEmpty(orderQuery)}" class="buyer-filter-pill" th:text="${'Search: ' + orderQuery}">Search</span>
+          <span th:if="${downloadsOnly}" class="buyer-filter-pill">Downloads only</span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(orders)}" class="empty-box">
+          No orders match the current filters. Try a broader search or return to the dashboard catalog.
+        </div>
+
+        <div th:unless="${#lists.isEmpty(orders)}" class="buyer-order-cards">
+          <article class="buyer-order-card" th:each="order : ${orders}">
+            <div class="buyer-order-card-main">
+              <div class="buyer-order-card-head">
+                <div>
+                  <h3 th:text="${order.product.name}">Product</h3>
+                  <p class="muted"
+                     th:text="${order.seller != null ? 'by ' + order.seller.username : 'Marketplace seller'}">seller</p>
+                </div>
+                <span class="buyer-badge-soft" th:if="${order.product.assetFilename != null}">Download ready</span>
+              </div>
+              <p class="buyer-order-card-description"
+                 th:text="${order.product.description != null and !#strings.isEmpty(order.product.description) ? order.product.description : 'No description available.'}">
+                Description
+              </p>
+              <div class="buyer-order-card-meta">
+                <span th:text="${'Qty ' + order.quantity}">Qty 1</span>
+                <span th:text="${order.soldAt != null ? #temporals.format(order.soldAt, 'dd MMM yyyy HH:mm') : '-'}">date</span>
+                <span th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+              </div>
+            </div>
+            <div class="buyer-order-card-actions">
+              <a th:if="${order.product.assetFilename != null}"
+                 th:href="@{/buyer/orders/{id}/download(id=${order.id})}"
+                 class="btn btn-outline">Download</a>
+              <span th:if="${order.product.assetFilename == null}" class="muted">No file</span>
+              <form th:action="@{/buyer/purchase}" method="post" class="buyer-rebuy-form">
+                <input type="hidden" name="productId" th:value="${order.product.id}"/>
+                <input type="hidden" name="returnTo" value="/buyer/orders"/>
+                <input type="hidden" name="quantity" value="1"/>
+                <button class="btn btn-primary btn-sm">Buy again</button>
+              </form>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="buyer-orders-side">
+        <section class="buyer-surface buyer-side-surface">
+          <div class="buyer-surface-head">
+            <div>
+              <p class="buyer-kicker">Summary</p>
+              <h2>At a glance</h2>
+            </div>
+          </div>
+          <div class="buyer-mini-stats buyer-mini-stats-tight">
+            <div>
+              <span>Total orders</span>
+              <strong th:text="${analytics.totalOrders}">0</strong>
+            </div>
+            <div>
+              <span>Downloads ready</span>
+              <strong th:text="${analytics.downloadsReady}">0</strong>
+            </div>
+            <div>
+              <span>Total spent</span>
+              <strong th:text="${'$' + #numbers.formatDecimal(analytics.totalSpent, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="buyer-surface buyer-side-surface">
+          <div class="buyer-surface-head">
+            <div>
+              <p class="buyer-kicker">Keep shopping</p>
+              <h2>Recommended next</h2>
+            </div>
+          </div>
+          <div th:if="${#lists.isEmpty(marketplacePicks)}" class="empty-box">
+            No in-stock products are available right now.
+          </div>
+          <div th:unless="${#lists.isEmpty(marketplacePicks)}" class="buyer-compact-list">
+            <article class="buyer-compact-item buyer-compact-item-wide" th:each="product : ${marketplacePicks}">
+              <div>
+                <strong th:text="${product.name}">Product</strong>
+                <p class="muted"
+                   th:text="${product.seller != null ? 'by ' + product.seller.username : 'Marketplace seller'}">seller</p>
+              </div>
+              <div class="buyer-inline-purchase">
+                <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+                <form th:action="@{/buyer/purchase}" method="post">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/orders"/>
+                  <input type="hidden" name="quantity" value="1"/>
+                  <button class="btn btn-sm btn-outline">Buy</button>
+                </form>
+              </div>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </section>
   </div>
-  <div class="info-box">
-    Your orders will appear here once you purchase products.
-  </div>
-  <a th:href="@{/}" class="btn btn-outline">← Back to marketplace</a>
-</div>
 </main>
 </body>
 </html>

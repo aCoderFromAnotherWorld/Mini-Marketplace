@@ -1,0 +1,1861 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buyer Dashboard - MiniMarket</title>
+  <style>
+/* base.css */
+/* MiniMarket base styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #4f46e5;
+  --primary-hov: #4338ca;
+  --primary-lt: #eef2ff;
+  --success: #16a34a;
+  --success-lt: #dcfce7;
+  --error: #dc2626;
+  --error-lt: #fee2e2;
+  --info: #0369a1;
+  --info-lt: #e0f2fe;
+  --admin: #7c3aed;
+  --admin-lt: #f5f3ff;
+  --seller: #d97706;
+  --seller-lt: #fffbeb;
+  --buyer: #0891b2;
+  --buyer-lt: #ecfeff;
+  --guest: #64748b;
+  --guest-lt: #f1f5f9;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --font: "Inter", system-ui, -apple-system, sans-serif;
+  --mono: "Fira Code", "Courier New", monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.6;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.center {
+  text-align: center;
+}
+
+.main {
+  min-height: calc(100vh - 60px - 52px);
+}
+
+.page-shell {
+  padding-top: 2rem;
+  padding-bottom: 2.5rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  margin: 0.5rem 0 0.3rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.dash-section {
+  margin-bottom: 2.5rem;
+}
+
+.dash-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.count-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary-lt);
+  color: var(--primary);
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.empty-box {
+  padding: 1.4rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.info-box {
+  margin-bottom: 1.5rem;
+  padding: 1.4rem;
+  border: 1.5px solid #c7d2fe;
+  border-radius: var(--radius-md);
+  background: var(--primary-lt);
+  color: #3730a3;
+  font-size: 0.9rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  border-color: var(--primary-hov);
+  background: var(--primary-hov);
+}
+
+.btn-outline {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.btn-outline:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: var(--text);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: none;
+  color: var(--muted);
+}
+
+.btn-ghost:hover {
+  background: #f1f5f9;
+  color: var(--text);
+}
+
+.btn-white {
+  border-color: #fff;
+  background: #fff;
+  color: var(--primary);
+}
+
+.btn-white:hover {
+  background: #eef2ff;
+}
+
+.btn-lg {
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-approve {
+  border-color: #86efac;
+  background: var(--success-lt);
+  color: var(--success);
+}
+
+.btn-approve:hover {
+  background: #bbf7d0;
+}
+
+.btn-reject {
+  border-color: #fca5a5;
+  background: var(--error-lt);
+  color: var(--error);
+}
+
+.btn-reject:hover {
+  background: #fecaca;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.7rem 1.5rem;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.logo-mark {
+  font-size: 1.35rem;
+}
+
+.logo-name {
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.nav-search {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.42rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.875rem;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.search-btn {
+  padding: 0.42rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.search-btn:hover {
+  background: var(--primary-hov);
+}
+
+.nav-right,
+.nav-guest,
+.nav-user {
+  display: flex;
+  align-items: center;
+}
+
+.nav-right {
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.nav-guest {
+  gap: 0.5rem;
+}
+
+.nav-user {
+  gap: 0.6rem;
+}
+
+.nav-username {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.nav-logout-form {
+  margin: 0;
+}
+
+.role-pill,
+.mode-pill {
+  display: inline-block;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.role-pill {
+  padding: 0.18rem 0.6rem;
+}
+
+.mode-pill {
+  padding: 0.3rem 1rem;
+  border: 1.5px solid transparent;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+.pill-admin {
+  background: var(--admin-lt);
+  color: var(--admin);
+}
+
+.pill-seller {
+  background: var(--seller-lt);
+  color: var(--seller);
+}
+
+.pill-buyer {
+  background: var(--buyer-lt);
+  color: var(--buyer);
+}
+
+.pill-guest {
+  background: var(--guest-lt);
+  color: var(--guest);
+}
+
+.mode-pill.pill-guest {
+  border-color: #cbd5e1;
+}
+
+.mode-pill.pill-admin {
+  border-color: #c4b5fd;
+}
+
+.mode-pill.pill-seller {
+  border-color: #fcd34d;
+}
+
+.mode-pill.pill-buyer {
+  border-color: #a5f3fc;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field label {
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 0.58rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.9rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.field-error label {
+  color: var(--error);
+}
+
+.field-error input {
+  border-color: var(--error);
+}
+
+.err-msg {
+  color: var(--error);
+  font-size: 0.8rem;
+}
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.alert-error {
+  border-color: #fca5a5;
+  background: var(--error-lt);
+  color: #991b1b;
+}
+
+.alert-success {
+  border-color: #86efac;
+  background: var(--success-lt);
+  color: #166534;
+}
+
+.alert-info {
+  border-color: #7dd3fc;
+  background: var(--info-lt);
+  color: #075985;
+}
+
+.table-box {
+  overflow-x: auto;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tbl th {
+  padding: 0.65rem 1rem;
+  border-bottom: 1.5px solid var(--border);
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tbl td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.tbl tr:last-child td {
+  border-bottom: none;
+}
+
+.tbl tr:hover td {
+  background: #f8fafc;
+}
+
+.action-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.status-on,
+.status-off {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-on {
+  color: var(--success);
+}
+
+.status-off {
+  color: var(--error);
+}
+
+@media (max-width: 768px) {
+  .nav-search {
+    display: none;
+  }
+
+  .nav-inner {
+    flex-wrap: wrap;
+  }
+}
+
+/* buyer-common.css */
+.buyer-page {
+  background:
+    radial-gradient(circle at top left, rgba(125, 211, 252, 0.22), transparent 30%),
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 28%),
+    linear-gradient(180deg, #f4fbff 0%, #f8fafc 28%, #f5f7fb 100%);
+}
+
+.buyer-hero {
+  padding: 2.5rem 0 1rem;
+}
+
+.buyer-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+  gap: 1.2rem;
+  align-items: stretch;
+}
+
+.buyer-hero-copy,
+.buyer-status-card,
+.buyer-panel {
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 18px 50px rgba(8, 145, 178, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.buyer-hero-copy {
+  padding: 2.2rem;
+  border-radius: 28px;
+}
+
+.buyer-hero-copy h1 {
+  max-width: 11ch;
+  margin: 0.9rem 0 0.85rem;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: -0.05em;
+  line-height: 1.04;
+}
+
+.buyer-hero-copy p {
+  max-width: 56ch;
+  color: #355268;
+}
+
+.buyer-hero-actions {
+  justify-content: flex-start;
+  margin-top: 1.6rem;
+}
+
+.buyer-status-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.6rem;
+  border-radius: 24px;
+}
+
+.buyer-status-label,
+.buyer-kicker {
+  color: var(--buyer);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.buyer-status-card h2 {
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+
+.buyer-status-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.buyer-status-meta div {
+  padding: 0.95rem;
+  border: 1px solid rgba(125, 211, 252, 0.65);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(236, 254, 255, 0.95), rgba(255, 255, 255, 0.95));
+}
+
+.buyer-status-meta span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.buyer-status-meta strong {
+  font-size: 1.4rem;
+}
+
+.buyer-section {
+  padding-top: 1rem;
+  padding-bottom: 1.4rem;
+}
+
+.buyer-section-tight {
+  padding-top: 0.25rem;
+}
+
+.buyer-metrics .buyer-metric-card {
+  border-color: rgba(125, 211, 252, 0.38);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.9));
+}
+
+.buyer-two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.buyer-highlight-panel,
+.buyer-panel {
+  padding: 1.35rem;
+  border-radius: 24px;
+}
+
+.buyer-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.buyer-panel-head h2 {
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.buyer-request-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(125, 211, 252, 0.5);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ecfeff, #ffffff);
+}
+
+.buyer-request-state {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.buyer-request-note {
+  color: #355268;
+}
+
+.buyer-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.buyer-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.96));
+}
+
+.buyer-order-item h3 {
+  margin-bottom: 0.15rem;
+  font-size: 1rem;
+}
+
+.buyer-order-side {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.buyer-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.buyer-product-grid-compact {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.buyer-product-card {
+  overflow: hidden;
+  border: 1px solid rgba(125, 211, 252, 0.34);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(240, 249, 255, 0.92));
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.buyer-product-card-compact {
+  box-shadow: none;
+}
+
+.buyer-product-media {
+  height: 180px;
+  background: linear-gradient(135deg, #cffafe 0%, #e0f2fe 45%, #f0fdfa 100%);
+}
+
+.buyer-product-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.buyer-product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #0f172a;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.buyer-product-body {
+  padding: 1.05rem;
+}
+
+.buyer-product-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.buyer-product-stock {
+  color: #0f766e;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.buyer-product-body h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.buyer-product-seller {
+  margin-bottom: 0.55rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.buyer-product-description {
+  min-height: 3.8rem;
+  margin-bottom: 1rem;
+  color: #355268;
+  font-size: 0.9rem;
+}
+
+.buyer-product-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.buyer-product-footer strong {
+  font-size: 1.3rem;
+}
+
+.buyer-purchase-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.buyer-qty-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.buyer-qty-field input {
+  width: 78px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.buyer-orders-shell {
+  padding-top: 2rem;
+  padding-bottom: 2.5rem;
+}
+
+.buyer-orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.buyer-orders-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.buyer-orders-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.2rem;
+}
+
+.buyer-orders-stats .info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0;
+}
+
+.buyer-orders-stats strong {
+  font-size: 1.6rem;
+}
+
+.buyer-bottom-actions {
+  margin-top: 1.25rem;
+}
+
+.buyer-pro-page {
+  background:
+    radial-gradient(circle at top left, rgba(224, 242, 254, 0.8), transparent 32%),
+    linear-gradient(180deg, #f8fbff 0%, #f4f8fc 100%);
+}
+
+.buyer-shell {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1.25rem;
+  padding-top: 2rem;
+  padding-bottom: 2.5rem;
+}
+
+.buyer-sidebar,
+.buyer-main,
+.buyer-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.buyer-side-card,
+.buyer-surface,
+.buyer-hero-banner {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.buyer-side-card,
+.buyer-surface {
+  padding: 1.15rem;
+}
+
+.buyer-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.buyer-avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.buyer-profile-card h1,
+.buyer-orders-hero h1 {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 1.4rem;
+  line-height: 1.1;
+}
+
+.buyer-nav-card h2,
+.buyer-support-card h2,
+.buyer-surface-head h2 {
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+
+.buyer-nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.buyer-nav-link {
+  display: block;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: #f8fafc;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.buyer-nav-link:hover,
+.buyer-nav-link.is-active {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.buyer-mini-stats {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.buyer-mini-stats div {
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #dbeafe;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f8fbff, #eef6ff);
+}
+
+.buyer-mini-stats span {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.buyer-mini-stats strong {
+  font-size: 1.25rem;
+}
+
+.buyer-mini-stats-tight strong {
+  font-size: 1.05rem;
+}
+
+.buyer-hero-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.9fr);
+  gap: 1rem;
+  padding: 1.35rem;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.9));
+}
+
+.buyer-hero-banner h2 {
+  max-width: 15ch;
+  margin: 0.75rem 0 0.85rem;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+}
+
+.buyer-hero-banner p {
+  max-width: 60ch;
+  color: #355268;
+}
+
+.buyer-hero-actions,
+.buyer-orders-hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.15rem;
+}
+
+.buyer-hero-panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.buyer-hero-panel-item {
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(191, 219, 254, 0.8);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.buyer-hero-panel-item span {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.buyer-hero-panel-item strong {
+  font-size: 1.35rem;
+}
+
+.buyer-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.buyer-stat-card {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+}
+
+.buyer-stat-card span,
+.buyer-stat-card small {
+  display: block;
+}
+
+.buyer-stat-card span {
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.buyer-stat-card strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 1.45rem;
+}
+
+.buyer-stat-card small {
+  color: #64748b;
+}
+
+.buyer-layout-grid,
+.buyer-orders-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) 340px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.buyer-surface-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.buyer-view-toggle {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border-radius: 9999px;
+  background: #eff6ff;
+}
+
+.buyer-view-chip {
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  color: #1e3a8a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.buyer-view-chip.is-active,
+.buyer-view-chip:hover {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.buyer-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(160px, 1fr)) auto;
+  gap: 0.85rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.buyer-toolbar-orders {
+  grid-template-columns: minmax(0, 1.6fr) 160px auto;
+}
+
+.buyer-toolbar .field {
+  margin-bottom: 0;
+}
+
+.buyer-toolbar-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.buyer-check-field {
+  justify-content: flex-end;
+}
+
+.buyer-check-field input {
+  width: auto;
+  min-height: 18px;
+  accent-color: #2563eb;
+}
+
+.buyer-filter-summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.buyer-filter-pill,
+.buyer-badge-soft {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.7rem;
+  border-radius: 9999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.buyer-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.buyer-catalog-card {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.buyer-catalog-media {
+  height: 180px;
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+}
+
+.buyer-catalog-media img,
+.buyer-list-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.buyer-catalog-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #1e293b;
+  font-size: 2.8rem;
+  font-weight: 800;
+}
+
+.buyer-catalog-body {
+  padding: 1rem;
+}
+
+.buyer-catalog-meta {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.65rem;
+}
+
+.buyer-catalog-body h3,
+.buyer-list-content h3,
+.buyer-order-card h3 {
+  margin-bottom: 0.2rem;
+  font-size: 1.06rem;
+  line-height: 1.2;
+}
+
+.buyer-catalog-seller {
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.buyer-catalog-description,
+.buyer-order-card-description {
+  margin-bottom: 0.9rem;
+  color: #355268;
+  font-size: 0.9rem;
+}
+
+.buyer-catalog-foot,
+.buyer-inline-purchase {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.8rem;
+}
+
+.buyer-catalog-foot strong,
+.buyer-list-purchase strong,
+.buyer-inline-purchase strong {
+  display: block;
+  font-size: 1.2rem;
+}
+
+.buyer-stock-note {
+  display: block;
+  margin-top: 0.15rem;
+  color: #0f766e;
+  font-size: 0.8rem;
+}
+
+.buyer-buy-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.buyer-buy-form-stacked {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.buyer-qty-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.buyer-qty-label input {
+  width: 78px;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+}
+
+.buyer-catalog-list,
+.buyer-order-cards,
+.buyer-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.buyer-list-row,
+.buyer-order-card,
+.buyer-compact-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.buyer-list-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 190px;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem;
+}
+
+.buyer-list-thumb {
+  overflow: hidden;
+  height: 140px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+}
+
+.buyer-list-content,
+.buyer-order-card-main {
+  min-width: 0;
+}
+
+.buyer-list-purchase {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.buyer-orders-wrap {
+  padding-top: 2rem;
+  padding-bottom: 2.5rem;
+}
+
+.buyer-orders-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.buyer-order-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.buyer-order-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 0.55rem;
+}
+
+.buyer-order-card-meta {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.buyer-order-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.buyer-rebuy-form {
+  margin: 0;
+}
+
+.buyer-compact-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.85rem 0.95rem;
+}
+
+.buyer-compact-item-wide {
+  align-items: flex-start;
+}
+
+.buyer-status-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.95rem;
+  border: 1px solid #dbeafe;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f8fbff, #eef6ff);
+}
+
+@media (max-width: 1100px) {
+  .buyer-shell,
+  .buyer-layout-grid,
+  .buyer-orders-grid,
+  .buyer-hero-banner {
+    grid-template-columns: 1fr;
+  }
+
+  .buyer-sidebar {
+    order: 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .buyer-hero-grid,
+  .buyer-two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .buyer-toolbar,
+  .buyer-toolbar-orders,
+  .buyer-metric-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .buyer-toolbar-actions {
+    grid-column: 1 / -1;
+  }
+
+  .buyer-list-row {
+    grid-template-columns: 1fr;
+  }
+
+  .buyer-list-thumb {
+    height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .buyer-orders-header,
+  .buyer-panel-head,
+  .buyer-order-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .buyer-orders-stats,
+  .buyer-status-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .buyer-product-description {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .buyer-shell,
+  .buyer-orders-wrap {
+    padding-top: 1rem;
+  }
+
+  .buyer-profile-card,
+  .buyer-orders-hero,
+  .buyer-order-card,
+  .buyer-order-card-head,
+  .buyer-catalog-foot,
+  .buyer-compact-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .buyer-toolbar,
+  .buyer-toolbar-orders,
+  .buyer-metric-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .buyer-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* buyer-dashboard.css */
+.buyer-dashboard-page .buyer-sidebar {
+  position: sticky;
+  top: 84px;
+  align-self: start;
+}
+
+.buyer-dashboard-page .buyer-main,
+.buyer-dashboard-page .buyer-catalog-surface,
+.buyer-dashboard-page .buyer-side-surface {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .buyer-dashboard-page .buyer-sidebar {
+    position: static;
+  }
+}
+  </style>
+</head>
+<body>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="main buyer-page buyer-pro-page buyer-dashboard-page">
+  <div class="container buyer-shell">
+    <aside class="buyer-sidebar">
+      <section class="buyer-side-card buyer-profile-card">
+        <div class="buyer-avatar"
+             th:text="${buyer.username != null and !#strings.isEmpty(buyer.username) ? #strings.toUpperCase(#strings.substring(buyer.username, 0, 1)) : 'B'}">
+          B
+        </div>
+        <div>
+          <p class="buyer-kicker">Account</p>
+          <h1 th:text="${buyer.username}">buyer</h1>
+          <p class="muted">Manage your digital purchases, downloads, and seller upgrade status from one place.</p>
+        </div>
+      </section>
+
+      <section class="buyer-side-card buyer-nav-card">
+        <h2>Quick Links</h2>
+        <a th:href="@{/buyer/dashboard}" class="buyer-nav-link is-active">Overview</a>
+        <a th:href="@{/buyer/orders}" class="buyer-nav-link">Orders & Downloads</a>
+        <a th:href="@{/buyer/seller-request}" class="buyer-nav-link">Become a Seller</a>
+      </section>
+
+      <section class="buyer-side-card buyer-mini-stats">
+        <div>
+          <span>Orders placed</span>
+          <strong th:text="${analytics.totalOrders}">0</strong>
+        </div>
+        <div>
+          <span>Downloads ready</span>
+          <strong th:text="${analytics.downloadsReady}">0</strong>
+        </div>
+        <div>
+          <span>Sellers supported</span>
+          <strong th:text="${analytics.sellersSupported}">0</strong>
+        </div>
+      </section>
+
+      <section class="buyer-side-card buyer-support-card">
+        <p class="buyer-kicker">Support</p>
+        <h2>Need help with a purchase?</h2>
+        <p class="muted">Use your order history to re-download files, review sellers, and keep your account purchase-ready.</p>
+        <a th:href="@{/buyer/orders(downloadsOnly=true)}" class="btn btn-primary btn-full">Open Downloads</a>
+      </section>
+    </aside>
+
+    <div class="buyer-main">
+      <section class="buyer-hero-banner">
+        <div class="buyer-hero-copy">
+          <span class="mode-pill pill-buyer">Buyer Mode</span>
+          <h2>Shop, collect, and manage digital products like a modern marketplace account.</h2>
+          <p>
+            This refreshed layout is inspired by current ecommerce account patterns: a fast account rail, a filter-first catalog, and a downloads-focused order area.
+          </p>
+          <div class="buyer-hero-actions">
+            <a th:href="@{/buyer/orders}" class="btn btn-primary">Manage Orders</a>
+            <a th:href="@{/buyer/seller-request}" class="btn btn-outline">Request Seller Access</a>
+          </div>
+        </div>
+        <div class="buyer-hero-panel">
+          <div class="buyer-hero-panel-item">
+            <span>Total spent</span>
+            <strong th:text="${'$' + #numbers.formatDecimal(analytics.totalSpent, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+          </div>
+          <div class="buyer-hero-panel-item">
+            <span>Live products</span>
+            <strong th:text="${analytics.availableProducts}">0</strong>
+          </div>
+          <div class="buyer-hero-panel-item">
+            <span>Units purchased</span>
+            <strong th:text="${analytics.totalUnitsPurchased}">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <div th:if="${successMsg}" class="alert alert-success"><span>OK</span><span th:text="${successMsg}"></span></div>
+      <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
+
+      <section class="buyer-metric-strip">
+        <article class="buyer-stat-card">
+          <span>Orders</span>
+          <strong th:text="${analytics.totalOrders}">0</strong>
+          <small>Your complete purchase history.</small>
+        </article>
+        <article class="buyer-stat-card">
+          <span>Downloads</span>
+          <strong th:text="${analytics.downloadsReady}">0</strong>
+          <small>Instant-access files ready now.</small>
+        </article>
+        <article class="buyer-stat-card">
+          <span>Sellers</span>
+          <strong th:text="${analytics.sellersSupported}">0</strong>
+          <small>Creators you have purchased from.</small>
+        </article>
+        <article class="buyer-stat-card">
+          <span>Catalog</span>
+          <strong th:text="${#lists.size(marketplacePicks)}">0</strong>
+          <small>Results in your current shopper view.</small>
+        </article>
+      </section>
+
+      <section class="buyer-layout-grid">
+        <section class="buyer-surface buyer-catalog-surface">
+          <div class="buyer-surface-head">
+            <div>
+              <p class="buyer-kicker">Catalog</p>
+              <h2>Browse the marketplace</h2>
+            </div>
+            <div class="buyer-view-toggle">
+              <a th:href="@{/buyer/dashboard(q=${catalogQuery}, seller=${catalogSeller}, sort=${catalogSort}, view='grid')}"
+                 class="buyer-view-chip"
+                 th:classappend="${catalogView == 'grid' ? ' is-active' : ''}">Grid</a>
+              <a th:href="@{/buyer/dashboard(q=${catalogQuery}, seller=${catalogSeller}, sort=${catalogSort}, view='list')}"
+                 class="buyer-view-chip"
+                 th:classappend="${catalogView == 'list' ? ' is-active' : ''}">List</a>
+            </div>
+          </div>
+
+          <form th:action="@{/buyer/dashboard}" method="get" class="buyer-toolbar">
+            <div class="field">
+              <label for="catalogQuery">Search products</label>
+              <input id="catalogQuery" type="text" name="q" th:value="${catalogQuery}"
+                     placeholder="Search by product, seller, or keyword"/>
+            </div>
+            <div class="field">
+              <label for="catalogSeller">Seller</label>
+              <select id="catalogSeller" name="seller">
+                <option value="">All sellers</option>
+                <option th:each="sellerName : ${sellerOptions}"
+                        th:value="${sellerName}"
+                        th:selected="${sellerName == catalogSeller}"
+                        th:text="${sellerName}">seller</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="catalogSort">Sort by</label>
+              <select id="catalogSort" name="sort">
+                <option value="featured" th:selected="${catalogSort == 'featured'}">Featured</option>
+                <option value="newest" th:selected="${catalogSort == 'newest'}">Newest</option>
+                <option value="priceAsc" th:selected="${catalogSort == 'priceAsc'}">Price: Low to High</option>
+                <option value="priceDesc" th:selected="${catalogSort == 'priceDesc'}">Price: High to Low</option>
+                <option value="name" th:selected="${catalogSort == 'name'}">Name</option>
+              </select>
+            </div>
+            <input type="hidden" name="view" th:value="${catalogView}"/>
+            <div class="buyer-toolbar-actions">
+              <button class="btn btn-primary">Apply</button>
+              <a th:href="@{/buyer/dashboard}" class="btn btn-outline">Reset</a>
+            </div>
+          </form>
+
+          <div class="buyer-filter-summary"
+               th:if="${!#strings.isEmpty(catalogQuery) or !#strings.isEmpty(catalogSeller) or catalogSort != 'featured'}">
+            <span th:if="${!#strings.isEmpty(catalogQuery)}" class="buyer-filter-pill"
+                  th:text="${'Search: ' + catalogQuery}">Search</span>
+            <span th:if="${!#strings.isEmpty(catalogSeller)}" class="buyer-filter-pill"
+                  th:text="${'Seller: ' + catalogSeller}">Seller</span>
+            <span th:if="${catalogSort != 'featured'}" class="buyer-filter-pill"
+                  th:text="${'Sort: ' + catalogSort}">Sort</span>
+          </div>
+
+          <div th:if="${#lists.isEmpty(marketplacePicks)}" class="empty-box">
+            No products match the current filters. Try clearing the search or switching the seller filter.
+          </div>
+
+          <div th:if="${!#lists.isEmpty(marketplacePicks) and catalogView == 'grid'}" class="buyer-catalog-grid">
+            <article class="buyer-catalog-card" th:each="product : ${marketplacePicks}">
+              <div class="buyer-catalog-media">
+                <img th:if="${product.imageFilename != null}"
+                     th:src="@{/buyer/products/{id}/image(id=${product.id})}"
+                     th:alt="${product.name}"/>
+                <div th:if="${product.imageFilename == null}" class="buyer-catalog-fallback">
+                  <span th:text="${product.name != null and !#strings.isEmpty(product.name) ? #strings.toUpperCase(#strings.substring(product.name, 0, 1)) : 'P'}">P</span>
+                </div>
+              </div>
+              <div class="buyer-catalog-body">
+                <div class="buyer-catalog-meta">
+                  <span class="role-pill pill-buyer">Digital</span>
+                  <span th:if="${product.assetFilename != null}" class="buyer-badge-soft">Instant download</span>
+                </div>
+                <h3 th:text="${product.name}">Product name</h3>
+                <p class="buyer-catalog-seller"
+                   th:text="${product.seller != null ? 'by ' + product.seller.username : 'Marketplace seller'}">by seller</p>
+                <p class="buyer-catalog-description"
+                   th:text="${product.description != null and !#strings.isEmpty(product.description) ? product.description : 'Ready to add to your digital collection.'}">
+                  Description
+                </p>
+                <div class="buyer-catalog-foot">
+                  <div>
+                    <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+                    <span class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                  </div>
+                  <form th:action="@{/buyer/purchase}" method="post" class="buyer-buy-form">
+                    <input type="hidden" name="productId" th:value="${product.id}"/>
+                    <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                    <label class="buyer-qty-label">
+                      Qty
+                      <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
+                    </label>
+                    <button class="btn btn-primary btn-sm">Buy now</button>
+                  </form>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div th:if="${!#lists.isEmpty(marketplacePicks) and catalogView == 'list'}" class="buyer-catalog-list">
+            <article class="buyer-list-row" th:each="product : ${marketplacePicks}">
+              <div class="buyer-list-thumb">
+                <img th:if="${product.imageFilename != null}"
+                     th:src="@{/buyer/products/{id}/image(id=${product.id})}"
+                     th:alt="${product.name}"/>
+                <div th:if="${product.imageFilename == null}" class="buyer-catalog-fallback">
+                  <span th:text="${product.name != null and !#strings.isEmpty(product.name) ? #strings.toUpperCase(#strings.substring(product.name, 0, 1)) : 'P'}">P</span>
+                </div>
+              </div>
+              <div class="buyer-list-content">
+                <div class="buyer-catalog-meta">
+                  <span class="role-pill pill-buyer">Digital</span>
+                  <span th:if="${product.assetFilename != null}" class="buyer-badge-soft">Instant download</span>
+                </div>
+                <h3 th:text="${product.name}">Product name</h3>
+                <p class="buyer-catalog-seller"
+                   th:text="${product.seller != null ? 'by ' + product.seller.username : 'Marketplace seller'}">by seller</p>
+                <p class="buyer-catalog-description"
+                   th:text="${product.description != null and !#strings.isEmpty(product.description) ? product.description : 'Ready to add to your digital collection.'}">
+                  Description
+                </p>
+              </div>
+              <div class="buyer-list-purchase">
+                <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+                <span class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                <form th:action="@{/buyer/purchase}" method="post" class="buyer-buy-form buyer-buy-form-stacked">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <label class="buyer-qty-label">
+                    Qty
+                    <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
+                  </label>
+                  <button class="btn btn-primary btn-sm">Buy now</button>
+                </form>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <div class="buyer-side-stack">
+          <section class="buyer-surface buyer-side-surface">
+            <div class="buyer-surface-head">
+              <div>
+                <p class="buyer-kicker">Downloads</p>
+                <h2>Ready right now</h2>
+              </div>
+              <a th:href="@{/buyer/orders(downloadsOnly=true)}" class="btn btn-outline btn-sm">See all</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(downloadReadyOrders)}" class="empty-box">
+              No downloadable purchases yet. Products with files will appear here after checkout.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(downloadReadyOrders)}" class="buyer-compact-list">
+              <article class="buyer-compact-item" th:each="order : ${downloadReadyOrders}">
+                <div>
+                  <strong th:text="${order.product.name}">Product</strong>
+                  <p class="muted" th:text="${order.seller != null ? order.seller.username : 'Marketplace seller'}">seller</p>
+                </div>
+                <a th:href="@{/buyer/orders/{id}/download(id=${order.id})}" class="btn btn-sm btn-outline">Download</a>
+              </article>
+            </div>
+          </section>
+
+          <section class="buyer-surface buyer-side-surface">
+            <div class="buyer-surface-head">
+              <div>
+                <p class="buyer-kicker">Seller upgrade</p>
+                <h2>Status</h2>
+              </div>
+            </div>
+
+            <div th:if="${latestSellerRequest == null}" class="buyer-status-box">
+              <span class="role-pill pill-guest">No request yet</span>
+              <p class="muted">If you want to list digital products later, request seller access from your account.</p>
+              <a th:href="@{/buyer/seller-request}" class="btn btn-outline btn-sm">Start request</a>
+            </div>
+
+            <div th:if="${latestSellerRequest != null}" class="buyer-status-box">
+              <span class="role-pill"
+                    th:classappend="${
+                      latestSellerRequest.status.name() == 'APPROVED' ? ' pill-seller' :
+                      (latestSellerRequest.status.name() == 'REJECTED' ? ' pill-admin' : ' pill-buyer')
+                    }"
+                    th:text="${latestSellerRequest.status.name()}">PENDING</span>
+              <p class="muted"
+                 th:text="${latestSellerRequest.requestedAt != null ? 'Submitted on ' + #temporals.format(latestSellerRequest.requestedAt, 'dd MMM yyyy') : 'Recently submitted'}">
+                Submitted on date
+              </p>
+              <p th:text="${latestSellerRequest.note != null and !#strings.isEmpty(latestSellerRequest.note) ? latestSellerRequest.note : 'No note included with this request.'}">
+                Note
+              </p>
+            </div>
+          </section>
+
+          <section class="buyer-surface buyer-side-surface">
+            <div class="buyer-surface-head">
+              <div>
+                <p class="buyer-kicker">Recent orders</p>
+                <h2>Keep momentum</h2>
+              </div>
+              <a th:href="@{/buyer/orders}" class="btn btn-outline btn-sm">History</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(recentOrders)}" class="empty-box">
+              Your recent orders list is empty. Buy a product to start building your library.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(recentOrders)}" class="buyer-compact-list">
+              <article class="buyer-compact-item buyer-compact-item-wide" th:each="order : ${recentOrders}">
+                <div>
+                  <strong th:text="${order.product.name}">Product</strong>
+                  <p class="muted"
+                     th:text="${order.soldAt != null ? #temporals.format(order.soldAt, 'dd MMM yyyy') : 'Recently purchased'}">
+                    date
+                  </p>
+                </div>
+                <strong th:text="${'$' + #numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>
+
