@@ -402,6 +402,55 @@ body {
   letter-spacing: -.02em;
 }
 
+.buyer-promo-rotator {
+  width: min(360px, 100%);
+  overflow: hidden;
+  border: 1.5px solid #d3deed;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.buyer-promo-track {
+  display: flex;
+  width: 200%;
+  animation: buyerPromoSwap 8s infinite ease-in-out;
+}
+
+.buyer-promo-card {
+  flex: 0 0 50%;
+  padding: .8rem .9rem;
+}
+
+.buyer-promo-card span {
+  display: block;
+  margin-bottom: .2rem;
+  color: #1d4ed8;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.buyer-promo-card strong {
+  display: block;
+  margin-bottom: .15rem;
+  font-size: 1.15rem;
+}
+
+.buyer-promo-card p {
+  color: #475569;
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.buyer-promo-discount {
+  background: #eef6ff;
+}
+
+.buyer-promo-hot {
+  background: #fff7ed;
+}
+
 .buyer-page-eyebrow {
   color: #1d4ed8;
   font-size: .72rem;
@@ -477,21 +526,25 @@ body {
   text-align: center;
 }
 
-.buyer-home-layout,
-.buyer-cart-layout,
-.buyer-account-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 1rem;
-  align-items: start;
+.buyer-home-layout {
+  display: block;
 }
 
-.buyer-home-main,
-.buyer-home-aside {
+.buyer-cart-layout,
+.buyer-account-layout {
+  display: block;
+}
+
+.buyer-cart-panel {
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+}
+
+.buyer-home-main {
   min-width: 0;
 }
 
-.buyer-home-aside,
 .buyer-side-card {
   display: flex;
   flex-direction: column;
@@ -718,6 +771,10 @@ body {
   font-weight: 700;
 }
 
+.buyer-stock-note-out {
+  color: #b91c1c;
+}
+
 .buyer-card-form {
   display: flex;
   align-items: flex-end;
@@ -727,6 +784,18 @@ body {
 .buyer-card-form-stack {
   flex-direction: column;
   align-items: stretch;
+}
+
+.btn-wishlist {
+  color: #374151;
+  border-color: #d1d5db;
+  background: #f8fafc;
+}
+
+.btn-wishlist:hover {
+  color: #1e293b;
+  border-color: #94a3b8;
+  background: #f1f5f9;
 }
 
 .buyer-qty-label {
@@ -898,9 +967,14 @@ body {
 }
 
 .buyer-cart-summary {
-  position: sticky;
-  top: 86px;
-  align-self: start;
+  position: static;
+}
+
+.buyer-cart-summary-inline {
+  padding: .9rem;
+  border: 1px solid #dbe7f5;
+  border-radius: 10px;
+  background: #f8fbff;
 }
 
 .buyer-cart-summary dl {
@@ -929,10 +1003,37 @@ body {
   margin-top: .7rem;
 }
 
-.buyer-profile-grid {
+.buyer-wishlist-section {
+  margin-top: .2rem;
+  padding-top: .9rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.buyer-wishlist-list .buyer-cart-row {
+  background: #fcfdff;
+}
+
+.buyer-account-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.buyer-account-card {
+  height: 100%;
+}
+
+.buyer-account-meta {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: .7rem;
+}
+
+.buyer-account-meta div {
+  padding: .75rem;
+  border: 1px solid #dbe7f5;
+  border-radius: 10px;
+  background: #f8fbff;
 }
 
 .buyer-address-form {
@@ -965,21 +1066,31 @@ body {
   transform: scale(.98);
 }
 
-@media (max-width: 1100px) {
-  .buyer-home-layout,
-  .buyer-cart-layout,
-  .buyer-account-layout {
-    grid-template-columns: 1fr;
+@keyframes buyerPromoSwap {
+  0%, 42% {
+    transform: translateX(0);
   }
+  50%, 92% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
 
-  .buyer-cart-summary {
-    position: static;
+@media (max-width: 1100px) {
+  .buyer-account-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 900px) {
   .buyer-page-top {
     flex-direction: column;
+  }
+
+  .buyer-promo-rotator {
+    width: 100%;
   }
 
   .buyer-filter-bar {
@@ -1001,7 +1112,7 @@ body {
     min-height: 180px;
   }
 
-  .buyer-profile-grid {
+  .buyer-account-grid {
     grid-template-columns: 1fr;
   }
 }

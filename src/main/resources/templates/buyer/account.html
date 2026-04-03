@@ -39,72 +39,79 @@
     <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
 
     <section class="buyer-account-layout">
-      <section class="buyer-panel">
-        <div class="buyer-panel-head">
-          <h2>Profile</h2>
-        </div>
-        <div class="buyer-profile-grid">
-          <article class="buyer-side-card">
-            <span class="buyer-page-eyebrow">Username</span>
-            <strong th:text="${accountUser.username}">buyer</strong>
-          </article>
-          <article class="buyer-side-card">
-            <span class="buyer-page-eyebrow">Email</span>
-            <strong th:text="${accountUser.email}">buyer@email.com</strong>
-          </article>
-          <article class="buyer-side-card">
-            <span class="buyer-page-eyebrow">Member since</span>
-            <strong th:text="${accountUser.createdAt != null ? #temporals.format(accountUser.createdAt, 'dd MMM yyyy') : '-'}">-</strong>
-          </article>
-        </div>
-      </section>
-
-      <section class="buyer-panel">
-        <div class="buyer-panel-head">
-          <h2>Shipping address</h2>
-        </div>
-        <form th:action="@{/buyer/account/address}" method="post" class="buyer-address-form">
-          <div class="field">
-            <label for="shippingAddress">Address</label>
-            <textarea id="shippingAddress"
-                      name="shippingAddress"
-                      rows="5"
-                      maxlength="400"
-                      placeholder="Street, city, state, postal code, country"
-                      th:text="${accountUser.shippingAddress}"></textarea>
+      <section class="buyer-account-grid">
+        <article class="buyer-panel buyer-account-card">
+          <div class="buyer-panel-head">
+            <h2>Profile</h2>
           </div>
-          <button class="btn btn-primary">Save address</button>
-        </form>
+          <div class="buyer-account-meta">
+            <div>
+              <span class="buyer-page-eyebrow">Username</span>
+              <strong th:text="${accountUser.username}">buyer</strong>
+            </div>
+            <div>
+              <span class="buyer-page-eyebrow">Email</span>
+              <strong th:text="${accountUser.email}">buyer@email.com</strong>
+            </div>
+            <div>
+              <span class="buyer-page-eyebrow">Member since</span>
+              <strong th:text="${accountUser.createdAt != null ? #temporals.format(accountUser.createdAt, 'dd MMM yyyy') : '-'}">-</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="buyer-panel buyer-account-card">
+          <div class="buyer-panel-head">
+            <h2>Shipping address</h2>
+          </div>
+          <form th:action="@{/buyer/account/address}" method="post" class="buyer-address-form">
+            <div class="field">
+              <label for="shippingAddress">Address</label>
+              <textarea id="shippingAddress"
+                        name="shippingAddress"
+                        rows="5"
+                        maxlength="400"
+                        placeholder="Street, city, state, postal code, country"
+                        th:text="${accountUser.shippingAddress}"></textarea>
+            </div>
+            <button class="btn btn-primary">Save address</button>
+          </form>
+        </article>
+
+        <article class="buyer-panel buyer-account-card">
+          <div class="buyer-panel-head">
+            <h2>Seller request</h2>
+          </div>
+          <div th:if="${latestSellerRequest == null}" class="buyer-status-box">
+            <span class="role-pill pill-guest">No request yet</span>
+            <p class="muted">Want to sell? Submit a request and the admin will review it.</p>
+            <a th:href="@{/buyer/seller-request}" class="btn btn-outline btn-sm">Request seller access</a>
+          </div>
+          <div th:if="${latestSellerRequest != null}" class="buyer-status-box">
+            <span class="role-pill"
+                  th:classappend="${
+                        latestSellerRequest.status.name() == 'APPROVED' ? ' pill-seller' :
+                        (latestSellerRequest.status.name() == 'REJECTED' ? ' pill-admin' : ' pill-buyer')
+                      }"
+                  th:text="${latestSellerRequest.status.name()}">PENDING</span>
+            <p class="muted"
+               th:text="${latestSellerRequest.requestedAt != null ? 'Submitted on ' + #temporals.format(latestSellerRequest.requestedAt, 'dd MMM yyyy') : 'Recently submitted'}">
+              date
+            </p>
+            <a th:href="@{/buyer/seller-request}" class="btn btn-outline btn-sm">Open request page</a>
+          </div>
+        </article>
+
+        <article class="buyer-panel buyer-account-card">
+          <div class="buyer-panel-head">
+            <h2>Session</h2>
+          </div>
+          <p class="muted">Use this action to securely sign out from your buyer account.</p>
+          <form th:action="@{/auth/logout}" method="post">
+            <button class="btn btn-outline btn-full" type="submit">Log out</button>
+          </form>
+        </article>
       </section>
-
-      <aside class="buyer-side-card">
-        <h2>Seller request</h2>
-        <div th:if="${latestSellerRequest == null}" class="buyer-status-box">
-          <span class="role-pill pill-guest">No request yet</span>
-          <p class="muted">Want to sell? Submit a request and the admin will review it.</p>
-          <a th:href="@{/buyer/seller-request}" class="btn btn-outline btn-sm">Request seller access</a>
-        </div>
-        <div th:if="${latestSellerRequest != null}" class="buyer-status-box">
-          <span class="role-pill"
-                th:classappend="${
-                      latestSellerRequest.status.name() == 'APPROVED' ? ' pill-seller' :
-                      (latestSellerRequest.status.name() == 'REJECTED' ? ' pill-admin' : ' pill-buyer')
-                    }"
-                th:text="${latestSellerRequest.status.name()}">PENDING</span>
-          <p class="muted"
-             th:text="${latestSellerRequest.requestedAt != null ? 'Submitted on ' + #temporals.format(latestSellerRequest.requestedAt, 'dd MMM yyyy') : 'Recently submitted'}">
-            date
-          </p>
-          <a th:href="@{/buyer/seller-request}" class="btn btn-outline btn-sm">Open request page</a>
-        </div>
-
-        <hr class="buyer-divider"/>
-
-        <h2>Session</h2>
-        <form th:action="@{/auth/logout}" method="post">
-          <button class="btn btn-outline btn-full" type="submit">Log out</button>
-        </form>
-      </aside>
     </section>
   </div>
 </main>

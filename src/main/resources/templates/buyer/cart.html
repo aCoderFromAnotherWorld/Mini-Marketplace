@@ -13,16 +13,6 @@
         <h1>Cart</h1>
         <p class="muted">Review selected items, adjust quantity, and checkout when ready.</p>
       </div>
-      <div class="buyer-top-stats">
-        <article>
-          <span>Unique items</span>
-          <strong th:text="${cartUniqueItems}">0</strong>
-        </article>
-        <article>
-          <span>Total units</span>
-          <strong th:text="${cartItemCount != null ? cartItemCount : 0}">0</strong>
-        </article>
-      </div>
     </header>
 
     <nav class="buyer-section-tabs" aria-label="Buyer sections">
@@ -39,7 +29,7 @@
     <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
 
     <section class="buyer-cart-layout">
-      <section class="buyer-panel">
+      <section class="buyer-panel buyer-cart-panel">
         <div class="buyer-panel-head">
           <h2>Cart items</h2>
         </div>
@@ -93,33 +83,82 @@
             </div>
           </article>
         </div>
-      </section>
 
-      <aside class="buyer-side-card buyer-cart-summary">
-        <h2>Summary</h2>
-        <p class="muted">Checkout purchases all valid cart items as individual orders.</p>
-        <dl>
-          <div>
-            <dt>Unique items</dt>
-            <dd th:text="${cartUniqueItems}">0</dd>
+        <section class="buyer-cart-summary buyer-cart-summary-inline">
+          <h2>Summary</h2>
+          <p class="muted">Checkout purchases all valid cart items as individual orders.</p>
+          <dl>
+            <div>
+              <dt>Unique items</dt>
+              <dd th:text="${cartUniqueItems}">0</dd>
+            </div>
+            <div>
+              <dt>Total units</dt>
+              <dd th:text="${cartItemCount != null ? cartItemCount : 0}">0</dd>
+            </div>
+            <div>
+              <dt>Subtotal</dt>
+              <dd th:text="${'$' + #numbers.formatDecimal(cartSubtotal, 1, 'COMMA', 2, 'POINT')}">$0.00</dd>
+            </div>
+          </dl>
+          <form th:action="@{/buyer/cart/checkout}" method="post">
+            <button class="btn btn-primary btn-full"
+                    th:disabled="${#lists.isEmpty(cartLines) or cartHasBlockingIssue}">
+              Checkout
+            </button>
+          </form>
+          <a th:href="@{/buyer/dashboard}" class="btn btn-outline btn-full">Continue shopping</a>
+        </section>
+
+        <section class="buyer-wishlist-section">
+          <div class="buyer-panel-head">
+            <h2>Wishlist</h2>
           </div>
-          <div>
-            <dt>Total units</dt>
-            <dd th:text="${cartItemCount != null ? cartItemCount : 0}">0</dd>
+
+          <div th:if="${#lists.isEmpty(wishlistLines)}" class="empty-box">
+            Your wishlist is empty.
           </div>
-          <div>
-            <dt>Subtotal</dt>
-            <dd th:text="${'$' + #numbers.formatDecimal(cartSubtotal, 1, 'COMMA', 2, 'POINT')}">$0.00</dd>
+
+          <div th:unless="${#lists.isEmpty(wishlistLines)}" class="buyer-cart-list buyer-wishlist-list">
+            <article class="buyer-cart-row" th:each="line : ${wishlistLines}">
+              <div class="buyer-cart-media">
+                <img th:if="${line.product().imageFilename != null}"
+                     th:src="@{/buyer/products/{id}/image(id=${line.product().id})}"
+                     th:alt="${line.product().name}"/>
+                <div th:if="${line.product().imageFilename == null}" class="buyer-product-fallback"
+                     th:text="${line.product().name != null and !#strings.isEmpty(line.product().name) ? #strings.toUpperCase(#strings.substring(line.product().name, 0, 1)) : 'P'}">P</div>
+              </div>
+              <div class="buyer-cart-info">
+                <h3 th:text="${line.product().name}">Product</h3>
+                <p class="muted"
+                   th:text="${line.product().seller != null ? 'by ' + line.product().seller.username : 'Marketplace seller'}">seller</p>
+                <p class="buyer-order-description"
+                   th:text="${line.product().description != null and !#strings.isEmpty(line.product().description) ? line.product().description : 'No description available.'}">
+                  Description
+                </p>
+              </div>
+              <div class="buyer-cart-controls">
+                <strong th:text="${'$' + #numbers.formatDecimal(line.product().price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
+                <span th:if="${line.product().stock > 0}" class="buyer-stock-note" th:text="${line.product().stock + ' left'}">0 left</span>
+                <span th:if="${line.product().stock <= 0}" class="buyer-stock-note buyer-stock-note-out">Out of stock</span>
+
+                <form th:if="${line.product().stock > 0}" th:action="@{/buyer/cart/add}" method="post">
+                  <input type="hidden" name="productId" th:value="${line.product().id}"/>
+                  <input type="hidden" name="quantity" value="1"/>
+                  <input type="hidden" name="returnTo" value="/buyer/cart"/>
+                  <button class="btn btn-outline btn-sm">Add to cart</button>
+                </form>
+
+                <form th:action="@{/buyer/wishlist/remove}" method="post">
+                  <input type="hidden" name="productId" th:value="${line.product().id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/cart"/>
+                  <button class="btn btn-outline btn-sm">Remove</button>
+                </form>
+              </div>
+            </article>
           </div>
-        </dl>
-        <form th:action="@{/buyer/cart/checkout}" method="post">
-          <button class="btn btn-primary btn-full"
-                  th:disabled="${#lists.isEmpty(cartLines) or cartHasBlockingIssue}">
-            Checkout
-          </button>
-        </form>
-        <a th:href="@{/buyer/dashboard}" class="btn btn-outline btn-full">Continue shopping</a>
-      </aside>
+        </section>
+      </section>
     </section>
   </div>
 </main>

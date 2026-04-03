@@ -185,7 +185,7 @@ public class BuyerDashboardService {
     }
 
     private List<Product> loadMarketplaceProducts(User buyer) {
-        return productRepository.findByStockGreaterThanOrderByCreatedAtDesc(0).stream()
+        return productRepository.findAllByOrderByCreatedAtDesc().stream()
             .filter(product -> !isOwnProduct(product, buyer))
             .toList();
     }
@@ -232,7 +232,7 @@ public class BuyerDashboardService {
     }
 
     private Comparator<Product> resolveProductComparator(String sort) {
-        return switch (normalizeSort(sort)) {
+        Comparator<Product> sortComparator = switch (normalizeSort(sort)) {
             case "newest" -> Comparator.comparing(Product::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo)).reversed();
             case "priceAsc" -> Comparator.comparing(Product::getPrice, Comparator.nullsLast(BigDecimal::compareTo))
                 .thenComparing(Product::getName, String.CASE_INSENSITIVE_ORDER);
@@ -244,6 +244,9 @@ public class BuyerDashboardService {
                 .thenComparing(Product::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
                 .thenComparing(Product::getPrice, Comparator.nullsLast(BigDecimal::compareTo));
         };
+
+        return Comparator.comparing(this::isOutOfStock)
+            .thenComparing(sortComparator);
     }
 
     private boolean matchesCatalogQuery(Product product, String query) {
@@ -301,6 +304,10 @@ public class BuyerDashboardService {
             && product.getSeller().getId() != null
             && buyer.getId() != null
             && product.getSeller().getId().equals(buyer.getId());
+    }
+
+    private boolean isOutOfStock(Product product) {
+        return product == null || product.getStock() == null || product.getStock() <= 0;
     }
 
     private int normalizeQuantity(Integer quantity) {

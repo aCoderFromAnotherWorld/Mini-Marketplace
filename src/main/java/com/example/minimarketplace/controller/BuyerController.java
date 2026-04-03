@@ -27,8 +27,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/buyer")
@@ -37,6 +39,7 @@ import java.util.Map;
 public class BuyerController {
 
     private static final String CART_SESSION_KEY = "buyerCart";
+    private static final String WISHLIST_SESSION_KEY = "buyerWishlist";
 
     private final BuyerDashboardService buyerDashboardService;
     private final UserService userService;
@@ -69,6 +72,11 @@ public class BuyerController {
 
         Map<Long, Integer> cart = getCart(session);
         var cartLines = buyerDashboardService.loadCart(auth.getName(), cart);
+        Map<Long, Integer> wishlistPseudoCart = new LinkedHashMap<>();
+        for (Long productId : getWishlist(session)) {
+            wishlistPseudoCart.put(productId, 1);
+        }
+        var wishlistLines = buyerDashboardService.loadCart(auth.getName(), wishlistPseudoCart);
         BigDecimal subtotal = cartLines.stream()
             .map(BuyerDashboardService.CartLine::lineTotal)
             .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -76,6 +84,7 @@ public class BuyerController {
         boolean hasBlockingIssue = cartLines.stream().anyMatch(line -> !line.purchasable());
 
         model.addAttribute("cartLines", cartLines);
+        model.addAttribute("wishlistLines", wishlistLines);
         model.addAttribute("cartSubtotal", subtotal);
         model.addAttribute("cartHasBlockingIssue", hasBlockingIssue);
         model.addAttribute("cartUniqueItems", cartLines.size());
@@ -97,6 +106,36 @@ public class BuyerController {
         } catch (RuntimeException ex) {
             ra.addFlashAttribute("errorMsg", ex.getMessage());
         }
+        return "redirect:" + sanitizeBuyerRoute(returnTo);
+    }
+
+    @PostMapping("/wishlist/add")
+    public String addToWishlist(@RequestParam Long productId,
+                                @RequestParam(defaultValue = "/buyer/dashboard") String returnTo,
+                                HttpSession session,
+                                RedirectAttributes ra) {
+        Set<Long> wishlist = getWishlist(session);
+        if (wishlist.add(productId)) {
+            ra.addFlashAttribute("successMsg", "Added to wishlist.");
+        } else {
+            ra.addFlashAttribute("successMsg", "Already in your wishlist.");
+        }
+        session.setAttribute(WISHLIST_SESSION_KEY, wishlist);
+        return "redirect:" + sanitizeBuyerRoute(returnTo);
+    }
+
+    @PostMapping("/wishlist/remove")
+    public String removeFromWishlist(@RequestParam Long productId,
+                                     @RequestParam(defaultValue = "/buyer/cart") String returnTo,
+                                     HttpSession session,
+                                     RedirectAttributes ra) {
+        Set<Long> wishlist = getWishlist(session);
+        if (wishlist.remove(productId)) {
+            ra.addFlashAttribute("successMsg", "Removed from wishlist.");
+        } else {
+            ra.addFlashAttribute("errorMsg", "That product is not in your wishlist.");
+        }
+        session.setAttribute(WISHLIST_SESSION_KEY, wishlist);
         return "redirect:" + sanitizeBuyerRoute(returnTo);
     }
 
@@ -281,6 +320,25 @@ public class BuyerController {
             }
         }
         session.setAttribute(CART_SESSION_KEY, normalized);
+        return normalized;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<Long> getWishlist(HttpSession session) {
+        Object wishlistObject = session.getAttribute(WISHLIST_SESSION_KEY);
+        if (!(wishlistObject instanceof Set<?> rawSet)) {
+            Set<Long> fresh = new LinkedHashSet<>();
+            session.setAttribute(WISHLIST_SESSION_KEY, fresh);
+            return fresh;
+        }
+
+        Set<Long> normalized = new LinkedHashSet<>();
+        for (Object value : rawSet) {
+            if (value instanceof Long productId) {
+                normalized.add(productId);
+            }
+        }
+        session.setAttribute(WISHLIST_SESSION_KEY, normalized);
         return normalized;
     }
 

@@ -67,7 +67,7 @@ class BuyerDashboardServiceTest {
         SellerRequest request = SellerRequest.builder().id(3L).build();
 
         when(userRepository.findByUsername("buyer1")).thenReturn(Optional.of(buyer));
-        when(productRepository.findByStockGreaterThanOrderByCreatedAtDesc(0)).thenReturn(List.of(product));
+        when(productRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(product));
         when(saleRepository.findTop10ByBuyerOrderBySoldAtDesc(buyer)).thenReturn(List.of(sale));
         when(sellerRequestRepository.findTopByUserOrderByRequestedAtDesc(buyer)).thenReturn(Optional.of(request));
         when(saleRepository.countByBuyer(buyer)).thenReturn(1L);

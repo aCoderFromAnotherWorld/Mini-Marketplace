@@ -13,15 +13,19 @@
         <h1>Home</h1>
         <p class="muted">Discover products from all sellers, add items to cart, and buy in one click.</p>
       </div>
-      <div class="buyer-top-stats">
-        <article>
-          <span>Total orders</span>
-          <strong th:text="${analytics.totalOrders}">0</strong>
-        </article>
-        <article>
-          <span>Ready downloads</span>
-          <strong th:text="${analytics.downloadsReady}">0</strong>
-        </article>
+      <div class="buyer-promo-rotator" aria-label="Store promotions">
+        <div class="buyer-promo-track">
+          <article class="buyer-promo-card buyer-promo-discount">
+            <span>Discount product</span>
+            <strong>Up to 40% OFF</strong>
+            <p>Limited markdowns on digital bundles from top sellers.</p>
+          </article>
+          <article class="buyer-promo-card buyer-promo-hot">
+            <span>Hot deal</span>
+            <strong>Flash drops</strong>
+            <p>Trending assets and templates updated every day.</p>
+          </article>
+        </div>
       </div>
     </header>
 
@@ -126,9 +130,10 @@
                 </p>
                 <div class="buyer-price-row">
                   <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
-                  <span class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                  <span th:if="${product.stock > 0}" class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                  <span th:if="${product.stock <= 0}" class="buyer-stock-note buyer-stock-note-out">Out of stock</span>
                 </div>
-                <form th:action="@{/buyer/cart/add}" method="post" class="buyer-card-form">
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/cart/add}" method="post" class="buyer-card-form">
                   <input type="hidden" name="productId" th:value="${product.id}"/>
                   <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
                   <label class="buyer-qty-label">
@@ -137,7 +142,7 @@
                   </label>
                   <button class="btn btn-outline btn-sm">Add to cart</button>
                 </form>
-                <form th:action="@{/buyer/purchase}" method="post" class="buyer-card-form">
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/purchase}" method="post" class="buyer-card-form">
                   <input type="hidden" name="productId" th:value="${product.id}"/>
                   <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
                   <label class="buyer-qty-label">
@@ -145,6 +150,11 @@
                     <input type="number" name="quantity" min="1" th:attr="max=${product.stock}" value="1"/>
                   </label>
                   <button class="btn btn-primary btn-sm">Buy now</button>
+                </form>
+                <form th:if="${product.stock <= 0}" th:action="@{/buyer/wishlist/add}" method="post" class="buyer-card-form">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <button class="btn btn-wishlist btn-sm">Add to wishlist</button>
                 </form>
               </div>
             </article>
@@ -170,8 +180,9 @@
               </div>
               <div class="buyer-product-row-buy">
                 <strong th:text="${'$' + #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
-                <span class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
-                <form th:action="@{/buyer/cart/add}" method="post" class="buyer-card-form buyer-card-form-stack">
+                <span th:if="${product.stock > 0}" class="buyer-stock-note" th:text="${product.stock + ' left'}">0 left</span>
+                <span th:if="${product.stock <= 0}" class="buyer-stock-note buyer-stock-note-out">Out of stock</span>
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/cart/add}" method="post" class="buyer-card-form buyer-card-form-stack">
                   <input type="hidden" name="productId" th:value="${product.id}"/>
                   <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
                   <label class="buyer-qty-label">
@@ -180,7 +191,7 @@
                   </label>
                   <button class="btn btn-outline btn-sm">Add to cart</button>
                 </form>
-                <form th:action="@{/buyer/purchase}" method="post" class="buyer-card-form buyer-card-form-stack">
+                <form th:if="${product.stock > 0}" th:action="@{/buyer/purchase}" method="post" class="buyer-card-form buyer-card-form-stack">
                   <input type="hidden" name="productId" th:value="${product.id}"/>
                   <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
                   <label class="buyer-qty-label">
@@ -189,73 +200,16 @@
                   </label>
                   <button class="btn btn-primary btn-sm">Buy now</button>
                 </form>
+                <form th:if="${product.stock <= 0}" th:action="@{/buyer/wishlist/add}" method="post" class="buyer-card-form buyer-card-form-stack">
+                  <input type="hidden" name="productId" th:value="${product.id}"/>
+                  <input type="hidden" name="returnTo" value="/buyer/dashboard"/>
+                  <button class="btn btn-wishlist btn-sm">Add to wishlist</button>
+                </form>
               </div>
             </article>
           </div>
         </div>
       </section>
-
-      <aside class="buyer-home-aside">
-        <section class="buyer-side-card">
-          <h2>Quick stats</h2>
-          <div class="buyer-small-stats">
-            <div>
-              <span>Total spent</span>
-              <strong th:text="${'$' + #numbers.formatDecimal(analytics.totalSpent, 1, 'COMMA', 2, 'POINT')}">$0.00</strong>
-            </div>
-            <div>
-              <span>Units purchased</span>
-              <strong th:text="${analytics.totalUnitsPurchased}">0</strong>
-            </div>
-            <div>
-              <span>Sellers supported</span>
-              <strong th:text="${analytics.sellersSupported}">0</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="buyer-side-card">
-          <div class="buyer-panel-head">
-            <h2>Download-ready</h2>
-            <a th:href="@{/buyer/orders(downloadsOnly=true)}" class="btn btn-outline btn-sm">View all</a>
-          </div>
-          <div th:if="${#lists.isEmpty(downloadReadyOrders)}" class="empty-box">
-            No downloadable purchases yet.
-          </div>
-          <div th:unless="${#lists.isEmpty(downloadReadyOrders)}" class="buyer-compact-list">
-            <article class="buyer-compact-item" th:each="order : ${downloadReadyOrders}">
-              <div>
-                <strong th:text="${order.product.name}">Product</strong>
-                <p class="muted" th:text="${order.seller != null ? order.seller.username : 'Marketplace seller'}">Seller</p>
-              </div>
-              <a th:href="@{/buyer/orders/{id}/download(id=${order.id})}" class="btn btn-outline btn-sm">Download</a>
-            </article>
-          </div>
-        </section>
-
-        <section class="buyer-side-card">
-          <div class="buyer-panel-head">
-            <h2>Seller request</h2>
-            <a th:href="@{/buyer/seller-request}" class="btn btn-outline btn-sm">Manage</a>
-          </div>
-          <div th:if="${latestSellerRequest == null}" class="buyer-status-box">
-            <span class="role-pill pill-guest">No request yet</span>
-            <p class="muted">Submit a seller request if you want to list your own products.</p>
-          </div>
-          <div th:if="${latestSellerRequest != null}" class="buyer-status-box">
-            <span class="role-pill"
-                  th:classappend="${
-                      latestSellerRequest.status.name() == 'APPROVED' ? ' pill-seller' :
-                      (latestSellerRequest.status.name() == 'REJECTED' ? ' pill-admin' : ' pill-buyer')
-                    }"
-                  th:text="${latestSellerRequest.status.name()}">PENDING</span>
-            <p class="muted"
-               th:text="${latestSellerRequest.requestedAt != null ? 'Submitted on ' + #temporals.format(latestSellerRequest.requestedAt, 'dd MMM yyyy') : 'Recently submitted'}">
-              Submitted on date
-            </p>
-          </div>
-        </section>
-      </aside>
     </section>
   </div>
 </main>

@@ -28,6 +28,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @EntityGraph(attributePaths = "seller")
     List<Product> findByIdIn(List<Long> ids);
 
+    @EntityGraph(attributePaths = "seller")
+    List<Product> findAllByOrderByCreatedAtDesc();
+
     long countByStockGreaterThan(Integer stock);
 
     @Query("select count(distinct p.seller.id) from Product p where p.stock > 0")
