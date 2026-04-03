@@ -2,59 +2,43 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- ═══ <head> fragment ═══════════════════════════════════════════ -->
-<head th:fragment="head(title)">
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title th:text="${title} + ' — MiniMarket'">MiniMarket</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}"/>
-</head>
-
-<!-- ═══ navbar fragment ═══════════════════════════════════════════ -->
 <body>
 <nav th:fragment="navbar" class="navbar">
   <div class="nav-inner">
-
-    <!-- Logo -->
     <a th:href="@{/}" class="nav-logo">
-      <span class="logo-mark">⚡</span>
+      <span class="logo-mark">MM</span>
       <span class="logo-name">MiniMarket</span>
     </a>
 
-    <!-- Search -->
     <form class="nav-search" th:action="@{/search}" method="get">
       <input type="text" name="q" class="search-input"
-             placeholder="Search digital products…"
+             placeholder="Search digital products..."
              th:value="${searchQuery}"/>
       <button type="submit" class="search-btn">Search</button>
     </form>
 
-    <!-- Right side -->
     <div class="nav-right">
-
-      <!-- Guest -->
       <div sec:authorize="!isAuthenticated()" class="nav-guest">
-        <a th:href="@{/auth/login}"    class="btn btn-ghost btn-sm">Log in</a>
+        <a th:href="@{/auth/login}" class="btn btn-ghost btn-sm">Log in</a>
         <a th:href="@{/auth/register}" class="btn btn-primary btn-sm">Sign up</a>
       </div>
 
-      <!-- Logged-in -->
       <div sec:authorize="isAuthenticated()" class="nav-user">
-        <span sec:authorize="hasRole('ADMIN')"                                               class="role-pill pill-admin">ADMIN</span>
-        <span sec:authorize="hasRole('SELLER') and !hasRole('ADMIN')"                        class="role-pill pill-seller">SELLER</span>
-        <span sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')"  class="role-pill pill-buyer">BUYER</span>
+        <span sec:authorize="hasRole('ADMIN')" class="role-pill pill-admin">ADMIN</span>
+        <span sec:authorize="hasRole('SELLER') and !hasRole('ADMIN')" class="role-pill pill-seller">SELLER</span>
+        <span sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="role-pill pill-buyer">BUYER</span>
 
         <span class="nav-username" sec:authentication="name">user</span>
 
-        <a th:href="@{/admin/dashboard}"  sec:authorize="hasRole('ADMIN')"                            class="btn btn-ghost btn-sm">Dashboard</a>
-        <a th:href="@{/seller/dashboard}" sec:authorize="hasRole('SELLER') and !hasRole('ADMIN')"     class="btn btn-ghost btn-sm">Dashboard</a>
-        <a th:href="@{/buyer/orders}"     sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">My Orders</a>
+        <a th:href="@{/admin/dashboard}" sec:authorize="hasRole('ADMIN')" class="btn btn-ghost btn-sm">Dashboard</a>
+        <a th:href="@{/seller/dashboard}" sec:authorize="hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">Dashboard</a>
+        <a th:href="@{/buyer/dashboard}" sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">Dashboard</a>
+        <a th:href="@{/buyer/orders}" sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">My Orders</a>
 
-        <form th:action="@{/auth/logout}" method="post" style="margin:0">
+        <form th:action="@{/auth/logout}" method="post" class="nav-logout-form">
           <button type="submit" class="btn btn-ghost btn-sm">Log out</button>
         </form>
       </div>
-
     </div>
   </div>
 </nav>
