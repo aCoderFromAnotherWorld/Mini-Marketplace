@@ -37,9 +37,13 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS sales (
     id           BIGSERIAL     PRIMARY KEY,
     seller_id    BIGINT        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    buyer_id     BIGINT        REFERENCES users(id) ON DELETE SET NULL,
     product_id   BIGINT        NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity     INTEGER       NOT NULL,
     unit_price   NUMERIC(12,2) NOT NULL,
     total_amount NUMERIC(12,2) NOT NULL,
     sold_at      TIMESTAMP     NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE sales
+    ADD COLUMN IF NOT EXISTS buyer_id BIGINT REFERENCES users(id) ON DELETE SET NULL;

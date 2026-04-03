@@ -1,27 +1,22 @@
 package com.example.minimarketplace.controller;
 
-import com.example.minimarketplace.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 
 @Controller
-@RequiredArgsConstructor
 public class HomeController {
-
-    private final UserService userService;
 
     @GetMapping("/")
     public String home(Authentication auth, Model model) {
         if (isLoggedIn(auth)) {
-            model.addAttribute("username", auth.getName());
-            model.addAttribute("role", primaryRole(auth));
-            try { model.addAttribute("user", userService.findByUsername(auth.getName())); }
-            catch (Exception ignored) {}
+            return "redirect:" + resolveLandingRoute(auth, null);
         }
         return "home";
     }
@@ -29,11 +24,10 @@ public class HomeController {
     @GetMapping("/search")
     public String search(@RequestParam(defaultValue = "") String q,
                          Authentication auth, Model model) {
-        model.addAttribute("searchQuery", q);
         if (isLoggedIn(auth)) {
-            model.addAttribute("username", auth.getName());
-            model.addAttribute("role", primaryRole(auth));
+            return "redirect:" + resolveLandingRoute(auth, q);
         }
+        model.addAttribute("searchQuery", q);
         return "home";
     }
 
@@ -41,21 +35,26 @@ public class HomeController {
         return a != null && a.isAuthenticated() && !"anonymousUser".equals(a.getPrincipal());
     }
 
-    private String primaryRole(Authentication a) {
-        return a.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .filter(r -> r.startsWith("ROLE_"))
-            .min((x, y) -> rank(x) - rank(y))
-            .map(r -> r.replace("ROLE_", ""))
-            .orElse("USER");
+    private String resolveLandingRoute(Authentication authentication, String searchQuery) {
+        if (hasRole(authentication, "ROLE_ADMIN")) {
+            return "/admin/dashboard";
+        }
+        if (hasRole(authentication, "ROLE_SELLER")) {
+            return "/seller/dashboard";
+        }
+        if (hasRole(authentication, "ROLE_BUYER")) {
+            if (searchQuery != null && !searchQuery.isBlank()) {
+                return "/buyer/dashboard?q="
+                    + UriUtils.encodeQueryParam(searchQuery.trim(), StandardCharsets.UTF_8);
+            }
+            return "/buyer/dashboard";
+        }
+        return "/";
     }
 
-    private int rank(String r) {
-        return switch (r) {
-            case "ROLE_ADMIN"  -> 1;
-            case "ROLE_SELLER" -> 2;
-            case "ROLE_BUYER"  -> 3;
-            default            -> 99;
-        };
+    private boolean hasRole(Authentication authentication, String role) {
+        return authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .anyMatch(role::equals);
     }
 }

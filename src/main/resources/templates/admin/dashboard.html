@@ -5,18 +5,39 @@
 <body>
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <main class="main">
-<div class="container" style="padding:2rem 1.5rem">
+<div class="container dashboard-shell admin-shell">
 
-  <div class="page-header">
-    <span class="mode-pill pill-admin">ADMIN</span>
-    <h1>Admin Dashboard</h1>
-    <p class="muted">Manage seller requests and user accounts</p>
-  </div>
+  <section class="admin-hero">
+    <div>
+      <span class="mode-pill pill-admin">ADMIN</span>
+      <h1>Admin Control Center</h1>
+      <p class="muted">Review seller requests, monitor account status, and keep marketplace operations smooth.</p>
+    </div>
+    <a th:href="@{/}" class="btn btn-outline">Back to Marketplace</a>
+  </section>
 
-  <div th:if="${successMsg}" class="alert alert-success"><span>✓</span><span th:text="${successMsg}"></span></div>
-  <div th:if="${errorMsg}"   class="alert alert-error">  <span>✕</span><span th:text="${errorMsg}"></span></div>
+  <section class="analytics-grid admin-metric-grid">
+    <article class="metric-card">
+      <h3>Pending Requests</h3>
+      <p th:text="${#lists.size(pendingRequests)}">0</p>
+    </article>
+    <article class="metric-card">
+      <h3>Total Users</h3>
+      <p th:text="${#lists.size(allUsers)}">0</p>
+    </article>
+    <article class="metric-card">
+      <h3>Active Accounts</h3>
+      <p th:text="${#lists.size(allUsers.?[enabled])}">0</p>
+    </article>
+    <article class="metric-card">
+      <h3>Disabled Accounts</h3>
+      <p th:text="${#lists.size(allUsers.?[enabled == false])}">0</p>
+    </article>
+  </section>
 
-  <!-- Pending seller requests -->
+  <div th:if="${successMsg}" class="alert alert-success"><span>OK</span><span th:text="${successMsg}"></span></div>
+  <div th:if="${errorMsg}" class="alert alert-error"><span>ERR</span><span th:text="${errorMsg}"></span></div>
+
   <section class="dash-section">
     <h2 class="dash-title">
       Pending Seller Requests
@@ -29,33 +50,39 @@
 
     <div th:unless="${#lists.isEmpty(pendingRequests)}" class="table-box">
       <table class="tbl">
-        <thead><tr>
-          <th>#</th><th>Username</th><th>Email</th><th>Note</th><th>Requested</th><th>Actions</th>
-        </tr></thead>
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Note</th>
+          <th>Requested</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
         <tbody>
-          <tr th:each="r : ${pendingRequests}">
-            <td th:text="${r.id}"></td>
-            <td><strong th:text="${r.user.username}"></strong></td>
-            <td th:text="${r.user.email}"></td>
-            <td th:text="${r.note != null and !#strings.isEmpty(r.note)} ? ${r.note} : '—'"></td>
-            <td th:text="${#temporals.format(r.requestedAt,'dd MMM yyyy')}"></td>
-            <td>
-              <div class="action-row">
-                <form th:action="@{/admin/seller-requests/{id}/approve(id=${r.id})}" method="post">
-                  <button class="btn btn-sm btn-approve">✓ Approve</button>
-                </form>
-                <form th:action="@{/admin/seller-requests/{id}/reject(id=${r.id})}" method="post">
-                  <button class="btn btn-sm btn-reject">✕ Reject</button>
-                </form>
-              </div>
-            </td>
-          </tr>
+        <tr th:each="r : ${pendingRequests}">
+          <td th:text="${r.id}"></td>
+          <td><strong th:text="${r.user.username}"></strong></td>
+          <td th:text="${r.user.email}"></td>
+          <td th:text="${r.note != null and !#strings.isEmpty(r.note) ? r.note : '-'}"></td>
+          <td th:text="${#temporals.format(r.requestedAt, 'dd MMM yyyy')}"></td>
+          <td>
+            <div class="action-row">
+              <form th:action="@{/admin/seller-requests/{id}/approve(id=${r.id})}" method="post">
+                <button class="btn btn-sm btn-approve">Approve</button>
+              </form>
+              <form th:action="@{/admin/seller-requests/{id}/reject(id=${r.id})}" method="post">
+                <button class="btn btn-sm btn-reject">Reject</button>
+              </form>
+            </div>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <!-- All users -->
   <section class="dash-section">
     <h2 class="dash-title">
       All Users
@@ -63,33 +90,38 @@
     </h2>
     <div class="table-box">
       <table class="tbl">
-        <thead><tr>
-          <th>#</th><th>Username</th><th>Email</th><th>Roles</th><th>Status</th><th>Joined</th>
-        </tr></thead>
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Roles</th>
+          <th>Status</th>
+          <th>Joined</th>
+        </tr>
+        </thead>
         <tbody>
-          <tr th:each="u : ${allUsers}">
-            <td th:text="${u.id}"></td>
-            <td><strong th:text="${u.username}"></strong></td>
-            <td th:text="${u.email}"></td>
-            <td>
-              <span th:each="role : ${u.roles}"
-                    class="role-pill"
-                    th:classappend="${role.name == 'ROLE_ADMIN'} ? 'pill-admin' :
-                                    (${role.name == 'ROLE_SELLER'} ? 'pill-seller' : 'pill-buyer')"
-                    th:text="${#strings.replace(role.name,'ROLE_','')}"></span>
-            </td>
-            <td>
-              <span th:if="${u.enabled}"    class="status-on">● Active</span>
-              <span th:unless="${u.enabled}" class="status-off">● Disabled</span>
-            </td>
-            <td th:text="${u.createdAt != null} ? ${#temporals.format(u.createdAt,'dd MMM yyyy')} : '—'"></td>
-          </tr>
+        <tr th:each="u : ${allUsers}">
+          <td th:text="${u.id}"></td>
+          <td><strong th:text="${u.username}"></strong></td>
+          <td th:text="${u.email}"></td>
+          <td>
+            <span th:each="role : ${u.roles}"
+                  class="role-pill"
+                  th:classappend="${role.name == 'ROLE_ADMIN'} ? 'pill-admin' : (${role.name == 'ROLE_SELLER'} ? 'pill-seller' : 'pill-buyer')"
+                  th:text="${#strings.replace(role.name, 'ROLE_', '')}"></span>
+          </td>
+          <td>
+            <span th:if="${u.enabled}" class="status-on">Active</span>
+            <span th:unless="${u.enabled}" class="status-off">Disabled</span>
+          </td>
+          <td th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'dd MMM yyyy') : '-'}"></td>
+        </tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <a th:href="@{/}" class="btn btn-outline">← Back to marketplace</a>
 </div>
 </main>
 </body>

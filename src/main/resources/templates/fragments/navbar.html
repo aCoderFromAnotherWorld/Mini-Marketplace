@@ -48,7 +48,13 @@
 
         <a th:href="@{/admin/dashboard}"  sec:authorize="hasRole('ADMIN')"                            class="btn btn-ghost btn-sm">Dashboard</a>
         <a th:href="@{/seller/dashboard}" sec:authorize="hasRole('SELLER') and !hasRole('ADMIN')"     class="btn btn-ghost btn-sm">Dashboard</a>
+        <a th:href="@{/buyer/dashboard}"  sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">Home</a>
+        <a th:href="@{/buyer/cart}"       sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">
+          Cart
+          <span th:text="${cartItemCount != null ? cartItemCount : 0}">0</span>
+        </a>
         <a th:href="@{/buyer/orders}"     sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">My Orders</a>
+        <a th:href="@{/buyer/account}"    sec:authorize="hasRole('BUYER') and !hasRole('SELLER') and !hasRole('ADMIN')" class="btn btn-ghost btn-sm">Account</a>
 
         <form th:action="@{/auth/logout}" method="post" style="margin:0">
           <button type="submit" class="btn btn-ghost btn-sm">Log out</button>

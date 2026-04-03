@@ -59,12 +59,16 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS sales (
     id           BIGSERIAL     PRIMARY KEY,
     seller_id    BIGINT        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    buyer_id     BIGINT        REFERENCES users(id) ON DELETE SET NULL,
     product_id   BIGINT        NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity     INTEGER       NOT NULL,
     unit_price   NUMERIC(12,2) NOT NULL,
     total_amount NUMERIC(12,2) NOT NULL,
     sold_at      TIMESTAMP     NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE sales
+    ADD COLUMN IF NOT EXISTS buyer_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
 
 -- ── Indexes ──────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_users_username         ON users(username);
@@ -73,6 +77,7 @@ CREATE INDEX IF NOT EXISTS idx_seller_requests_status ON seller_requests(status)
 CREATE INDEX IF NOT EXISTS idx_seller_requests_user   ON seller_requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_products_seller         ON products(seller_id);
 CREATE INDEX IF NOT EXISTS idx_sales_seller            ON sales(seller_id);
+CREATE INDEX IF NOT EXISTS idx_sales_buyer             ON sales(buyer_id);
 CREATE INDEX IF NOT EXISTS idx_sales_product           ON sales(product_id);
 CREATE INDEX IF NOT EXISTS idx_sales_sold_at           ON sales(sold_at);
 
