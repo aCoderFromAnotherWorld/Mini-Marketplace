@@ -18,9 +18,11 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
@@ -191,6 +193,63 @@ class BuyerControllerTest {
         assertThat(redirectAttributes.getFlashAttributes().get("successMsg"))
             .isEqualTo("Shipping address updated.");
         verify(userService).updateShippingAddress("buyer1", "Dhaka, Bangladesh");
+    }
+
+    @Test
+    void cartShouldIncludeWishlistLinesInModel() {
+        var model = new ExtendedModelMap();
+        var buyer = User.builder().username("buyer1").build();
+        var analytics = new BuyerAnalytics(1, 2, new BigDecimal("20.00"), 1, 1, 5);
+        var dashboardData = new BuyerDashboardData(buyer, analytics, List.of(), List.of(), null, List.of(), List.of());
+        var cartProduct = Product.builder().id(7L).name("Prompt Pack").price(new BigDecimal("10.00")).stock(5).build();
+        var wishlistProduct = Product.builder().id(11L).name("Template Set").price(new BigDecimal("7.00")).stock(0).build();
+        var cartLines = List.of(new BuyerDashboardService.CartLine(cartProduct, 2, new BigDecimal("20.00"), true, null));
+        var wishlistLines = List.of(new BuyerDashboardService.CartLine(wishlistProduct, 1, new BigDecimal("7.00"), false, "Out of stock right now."));
+        Map<Long, Integer> cart = new LinkedHashMap<>();
+        cart.put(7L, 2);
+        Set<Long> wishlist = new LinkedHashSet<>(List.of(11L));
+
+        when(authentication.getName()).thenReturn("buyer1");
+        when(buyerDashboardService.loadDashboard("buyer1", "", "", "featured")).thenReturn(dashboardData);
+        when(session.getAttribute("buyerCart")).thenReturn(cart);
+        when(session.getAttribute("buyerWishlist")).thenReturn(wishlist);
+        when(buyerDashboardService.loadCart("buyer1", Map.of(7L, 2))).thenReturn(cartLines);
+        when(buyerDashboardService.loadCart("buyer1", Map.of(11L, 1))).thenReturn(wishlistLines);
+
+        String view = buyerController.cart(authentication, model, session);
+
+        assertThat(view).isEqualTo("buyer/cart");
+        assertThat(model.getAttribute("cartLines")).isEqualTo(cartLines);
+        assertThat(model.getAttribute("wishlistLines")).isEqualTo(wishlistLines);
+        assertThat(model.getAttribute("cartUniqueItems")).isEqualTo(1);
+        assertThat(model.getAttribute("cartHasBlockingIssue")).isEqualTo(false);
+        assertThat(model.getAttribute("cartSubtotal")).isEqualTo(new BigDecimal("20.00"));
+    }
+
+    @Test
+    void addToWishlistShouldStoreItemAndSanitizeRoute() {
+        var redirectAttributes = new RedirectAttributesModelMap();
+        Set<Long> wishlist = new LinkedHashSet<>();
+        when(session.getAttribute("buyerWishlist")).thenReturn(wishlist);
+
+        String view = buyerController.addToWishlist(9L, "/admin/dashboard", session, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/buyer/dashboard");
+        assertThat(redirectAttributes.getFlashAttributes().get("successMsg")).isEqualTo("Added to wishlist.");
+        verify(session, atLeastOnce()).setAttribute("buyerWishlist", Set.of(9L));
+    }
+
+    @Test
+    void removeFromWishlistShouldRemoveItemAndRedirectToCart() {
+        var redirectAttributes = new RedirectAttributesModelMap();
+        Set<Long> wishlist = new LinkedHashSet<>(List.of(9L, 12L));
+        when(session.getAttribute("buyerWishlist")).thenReturn(wishlist);
+
+        String view = buyerController.removeFromWishlist(9L, "/buyer/cart", session, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/buyer/cart");
+        assertThat(redirectAttributes.getFlashAttributes().get("successMsg")).isEqualTo("Removed from wishlist.");
+        verify(session, atLeastOnce()).setAttribute("buyerWishlist", Set.of(12L));
     }
 
     @Test
