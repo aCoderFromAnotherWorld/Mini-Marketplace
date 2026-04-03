@@ -28,6 +28,9 @@ public class User {
     @Column(nullable = false)
     private String password;  // BCrypt hash — never plain text
 
+    @Column(length = 400)
+    private String shippingAddress;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean enabled = true;
