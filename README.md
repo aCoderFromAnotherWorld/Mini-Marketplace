@@ -28,15 +28,11 @@ Main capabilities:
 
 ## Architecture Diagram
 
-```text
-![Architecture diagram](/docs/diagrams/architecture-diagram.png)
-```
+![Architecture diagram](docs/diagrams/architecture-diagram.png)
 
 ## ER Diagram
 
-```text
-![ER diagram](/docs/diagrams/ER-diagram.png)
-```
+![ER diagram](docs/diagrams/ER-diagram.png)
 
 
 ## API Endpoints
@@ -181,9 +177,14 @@ Pipeline stages:
 - Builds and pushes image tags (branch, SHA, latest on default branch)
 
 3. `deploy` (push to `main` or `master` only)
-- Deployed on Render
 - Depends on `publish-image`
-- Calls `RENDER_DEPLOY_HOOK_URL` (if configured) to trigger deployment
+- Triggers Render deploy hook by calling `RENDER_DEPLOY_HOOK_URL` from GitHub Secrets
+- If `RENDER_DEPLOY_HOOK_URL` is not set, deployment is skipped without failing the workflow
+
+Set this secret at:
+- `Repository Settings -> Secrets and variables -> Actions -> New repository secret`
+- Name: `RENDER_DEPLOY_HOOK_URL`
+- Value: your Render deploy hook URL
 
 Notes:
 - Concurrency is enabled, so older in-progress runs on the same branch are canceled.
