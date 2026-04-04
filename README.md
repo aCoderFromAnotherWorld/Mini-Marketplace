@@ -28,25 +28,16 @@ Main capabilities:
 
 ## Architecture Diagram
 
-Diagram placeholder (add your diagram later):
-
 ```text
-[ Architecture diagram goes here ]
+![Architecture diagram](/docs/diagrams/architecture-diagram.png)
 ```
-
-Suggested path for future image:
-- `docs/diagrams/architecture.png`
 
 ## ER Diagram
 
-Diagram placeholder (add your diagram later):
-
 ```text
-[ ER diagram goes here ]
+![ER diagram](/docs/diagrams/ER-diagram.png)
 ```
 
-Suggested path for future image:
-- `docs/diagrams/er-diagram.png`
 
 ## API Endpoints
 
@@ -190,6 +181,7 @@ Pipeline stages:
 - Builds and pushes image tags (branch, SHA, latest on default branch)
 
 3. `deploy` (push to `main` or `master` only)
+- Deployed on Render
 - Depends on `publish-image`
 - Calls `RENDER_DEPLOY_HOOK_URL` (if configured) to trigger deployment
 
@@ -197,24 +189,26 @@ Notes:
 - Concurrency is enabled, so older in-progress runs on the same branch are canceled.
 - `RENDER_DEPLOY_HOOK_URL` is optional.
 
-## Suggested Project Structure Snapshot
+## Project Structure Snapshot
 
 ```text
-src/main/java/com/example/minimarketplace
-  config/
-  controller/
-  dto/
-  entity/
-  exception/
-  repository/
-  service/
-
-src/main/resources
-  templates/
-  static/
-  application.yaml
-
-src/test
-  java/
-  resources/application-test.yaml
+src/
+├── main/
+│   ├── java/
+│   │   └── com/example/minimarketplace/
+│   │       ├── config/
+│   │       ├── controller/
+│   │       ├── dto/
+│   │       ├── entity/
+│   │       ├── exception/
+│   │       ├── repository/
+│   │       └── service/
+│   └── resources/
+│       ├── templates/
+│       ├── static/
+│       └── application.yaml
+└── test/
+    ├── java/
+    └── resources/
+        └── application-test.yaml
 ```
