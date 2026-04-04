@@ -1,12 +1,15 @@
 # ------------------------------------------------------------------------------
-# compose.dev.yaml - LOCAL DEVELOPMENT only (database service)
-# Spring Boot's docker-compose integration uses this when running from the IDE
-# so local app runs can start Postgres without also starting the app container.
+# compose.yaml - DEFAULT FULL STACK (app + postgres)
+# Run with: docker compose up --build
+# Uses env vars from .env (copy .env.example -> .env first) or the defaults below.
 # ------------------------------------------------------------------------------
 services:
+
+  # -- PostgreSQL ---------------------------------------------------------------
   postgres:
-    image: "postgres:16-alpine"
+    image: postgres:16-alpine
     container_name: minimarket-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-minimarket}
       POSTGRES_USER: ${DB_USER:-appuser}
@@ -21,7 +24,38 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
+    networks:
+      - minimarket-net
+
+  # -- Spring Boot App ----------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minimarket-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-minimarket}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-appuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-secret}
+      JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      PORT: 8080
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    networks:
+      - minimarket-net
 
 volumes:
   pgdata:
     name: minimarket-pgdata
+
+networks:
+  minimarket-net:
+    name: minimarket-net
