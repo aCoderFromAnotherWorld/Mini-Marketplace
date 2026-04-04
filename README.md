@@ -180,6 +180,7 @@ Pipeline stages:
 - Depends on `publish-image`
 - Triggers Render deploy hook by calling `RENDER_DEPLOY_HOOK_URL` from GitHub Secrets
 - If `RENDER_DEPLOY_HOOK_URL` is not set, deployment is skipped without failing the workflow
+- Live application URL: `https://mini-marketplace-eclu.onrender.com`
 
 Set this secret at:
 - `Repository Settings -> Secrets and variables -> Actions -> New repository secret`
